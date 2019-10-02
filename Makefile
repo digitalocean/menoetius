@@ -63,7 +63,7 @@ reformat:
 	$(CC) -I./src/client -I./src/common -I./src/test_common -c $(CCFLAGS) $< -o $@
 
 clean:
-	rm -f dump server test smoke $(DUMPOBJ) $(SMOKEOBJ) $(COMPOBJ) $(SAMPLEEXTRACTOROBJ) $(SERVEROBJ) $(TESTOBJ)
+	rm -f dump server test smoke comp sample-extractor $(DUMPOBJ) $(SMOKEOBJ) $(COMPOBJ) $(SAMPLEEXTRACTOROBJ) $(SERVEROBJ) $(TESTOBJ)
 
 run-valgrind: server
 	#valgrind --track-origins=yes ./server

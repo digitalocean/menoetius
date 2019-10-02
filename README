@@ -1,0 +1,30 @@
+Menoetius is a timeseries storage system designed to stores prometheus-compatible data.
+
+Build requirements:
+ - make
+ - gcc
+ - libmicrohttpd
+ - libcrypto
+ - libcunit (for testing only)
+
+Building:
+
+    make
+
+Running tests:
+
+    ./test
+
+Running the server:
+
+    MENOETIUS_STORAGE_PATH=/tmp/storage_path ./server
+
+Writing data to the server: currently we only have a client library available
+(see src/client/client.h), additionally the src/smoketest directory contains
+examples of using the client.
+
+Bug reports and pull requests can be submitted via the github project
+located at https://github.com/digitalocean/menoetius
+
+This program is distributed under the GPLv3.  Please see the file LICENSE
+for full license information.
