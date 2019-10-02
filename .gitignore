@@ -1,0 +1,9 @@
+*.o
+/.gdb_history
+/dump
+/server
+/smoke
+/test
+/comp
+/sample-extractor
+/server.log
