@@ -1,0 +1,7 @@
+This image is used for building menoetius; it contains gcc, clang, and other dependencies.
+
+To create the builder image, run:
+
+    ./build-builder-image.sh
+
+This will build the builder image, and save the image tag to .docker-image.sh

@@ -19,6 +19,11 @@ Running the server:
 
     MENOETIUS_STORAGE_PATH=/tmp/storage_path ./server
 
+Building a deb package: a dockerfile is provided for building a debian package, first
+install docker, then run:
+
+    ./build-deb.sh
+
 Writing data to the server: currently we only have a client library available
 (see src/client/client.h), additionally the src/smoketest directory contains
 examples of using the client.
