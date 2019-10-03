@@ -1,4 +1,4 @@
-Menoetius is a timeseries storage system designed to stores prometheus-compatible data.
+Menoetius is a timeseries storage system designed to store prometheus-compatible data.
 
 Build requirements:
  - make
