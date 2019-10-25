@@ -22,10 +22,11 @@ SAMPLEEXTRACTOROBJ=$(SAMPLEEXTRACTORSRC:%.c=%.o)
 SERVERSRC=$(wildcard src/common/*.c src/server/*.c)
 SERVEROBJ=$(SERVERSRC:%.c=%.o)
 
+CLISRC=$(wildcard src/common/*.c src/client/*.c src/cli/*.c)
+CLIOBJ=$(CLISRC:%.c=%.o)
+
 TESTSRC=$(wildcard src/common/*.c src/test_common/*.c src/test/*.c)
 TESTOBJ=$(TESTSRC:%.c=%.o)
-
-OBJWITHOUTMAIN := $(filter-out src/main.o,$(OBJ))
 
 debug: CCFLAGS += -DDEBUG_BUILD -DSERVER_BUILD -g
 debug: all
@@ -33,7 +34,7 @@ debug: all
 release: CCFLAGS += -O3
 release: all
 
-all: dump server test smoke comp sample-extractor
+all: dump menoetius-server menoetius-cli test smoke comp sample-extractor
 
 dump: $(DUMPOBJ)
 	$(CC) $(CCFLAGS) -o dump $(DUMPOBJ) $(LDFLAGS)
@@ -47,8 +48,11 @@ comp: $(COMPOBJ)
 sample-extractor: $(SAMPLEEXTRACTOROBJ)
 	$(CC) $(CCFLAGS) -o sample-extractor $(SAMPLEEXTRACTOROBJ) $(LDFLAGS)
 
-server: $(SERVEROBJ)
-	$(CC) $(CCFLAGS) -o server $(SERVEROBJ) $(LDFLAGS)
+menoetius-server: $(SERVEROBJ)
+	$(CC) $(CCFLAGS) -o menoetius-server $(SERVEROBJ) $(LDFLAGS)
+
+menoetius-cli: $(CLIOBJ)
+	$(CC) $(CCFLAGS) -o menoetius-cli $(CLIOBJ) $(LDFLAGS)
 
 test: $(TESTOBJ)
 	$(CC) $(CCFLAGS) -o test $(TESTOBJ) $(LDFLAGS) -lcunit
@@ -63,9 +67,5 @@ reformat:
 	$(CC) -I./src/client -I./src/common -I./src/test_common -c $(CCFLAGS) $< -o $@
 
 clean:
-	rm -f dump server test smoke comp sample-extractor $(DUMPOBJ) $(SMOKEOBJ) $(COMPOBJ) $(SAMPLEEXTRACTOROBJ) $(SERVEROBJ) $(TESTOBJ)
-
-run-valgrind: server
-	#valgrind --track-origins=yes ./server
-	valgrind --leak-check=full --show-leak-kinds=all ./server
+	rm -f dump menoetius-server menoetius-cli test smoke comp sample-extractor $(DUMPOBJ) $(SMOKEOBJ) $(COMPOBJ) $(SAMPLEEXTRACTOROBJ) $(SERVEROBJ) $(TESTOBJ)
 

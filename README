@@ -17,7 +17,7 @@ Running tests:
 
 Running the server:
 
-    MENOETIUS_STORAGE_PATH=/tmp/storage_path ./server
+    MENOETIUS_STORAGE_PATH=/tmp/storage_path ./menoetius-server
 
 Building a deb package: a dockerfile is provided for building a debian package, first
 install docker, then run:
