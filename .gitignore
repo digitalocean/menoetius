@@ -1,6 +1,8 @@
 *.o
 /.gdb_history
 /dump
+/menoetius-server
+/menoetius-client
 /server
 /smoke
 /test
