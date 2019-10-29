@@ -1,9 +1,9 @@
 #include "option_parser.h"
 
-#include "help.h"
-#include "put.h"
 #include "get.h"
 #include "globals.h"
+#include "help.h"
+#include "put.h"
 
 #include "my_malloc.h"
 
@@ -30,10 +30,9 @@
 
 #define DEFAULT_PROCESS_NAME "menoetius-cli"
 
-
+const char* process_name;
 char host[MAX_HOST];
 int port = MENOETIUS_PORT;
-
 
 int is_little_endian()
 {
@@ -51,25 +50,26 @@ void print_usage( struct cmd_struct* commands, const char* name )
 	}
 }
 
-int parse_host_and_port(const char *s, char host[MAX_HOST], int *port)
+int parse_host_and_port( const char* s, char host[MAX_HOST], int* port )
 {
 	for( int i = 0; s[i]; i++ ) {
 		if( s[i] == ':' ) {
-			memcpy(host, s, i);
+			memcpy( host, s, i );
 			host[i] = '\0';
 			i++;
 			if( s[i] ) {
-				*port = atoi(s+i);
+				*port = atoi( s + i );
 				if( *port == 0 ) {
 					return 1;
 				}
-			} else {
+			}
+			else {
 				return 1;
 			}
 			return 0;
 		}
 	}
-	strcpy(host, s);
+	strcpy( host, s );
 	return 0;
 }
 
@@ -77,13 +77,16 @@ int main( int argc, const char** argv, const char** env )
 {
 	int res;
 
-	const char *host_and_port = "localhost";
+	const char* host_and_port = "localhost";
 
 	int help = 0;
-	struct option options[] = {
-		OPT_STR( 'H', "host", &host_and_port, "host (and optional port) to connect in the form host, or host:port (default: localhost)" ),
-		OPT_FLAG( 'h', "help", &help, "display this help text" ),
-		OPT_END};
+	struct option options[] = {OPT_STR( 'H',
+										"host",
+										&host_and_port,
+										"host (and optional port) to connect in the form host, or "
+										"host:port (default: localhost)" ),
+							   OPT_FLAG( 'h', "help", &help, "display this help text" ),
+							   OPT_END};
 
 	struct cmd_struct commands[] = {
 		{"help", run_help},
@@ -100,21 +103,27 @@ int main( int argc, const char** argv, const char** env )
 		print_usage( commands, DEFAULT_PROCESS_NAME );
 		return 2;
 	}
-	const char* pname = argv[0];
+	process_name = argv[0];
 	argv++;
+
+	if( !process_name[0] ) {
+		process_name = DEFAULT_PROCESS_NAME;
+	}
 
 	res = parse_options( options, &argv );
 	if( res || help ) {
-		print_usage( commands, pname );
+		print_usage( commands, process_name );
 		return res ? 1 : 0;
 	}
 
 	if( !argv[0] ) {
-		fprintf( stderr, "missing command name; run \"%s help\" to view available commands\n", pname );
+		fprintf( stderr,
+				 "missing command name; run \"%s help\" to view available commands\n",
+				 process_name );
 		return 1;
 	}
 
-	res = parse_host_and_port(host_and_port, host, &port);
+	res = parse_host_and_port( host_and_port, host, &port );
 	if( res ) {
 		fprintf( stderr, "failed to parse host \"%s\"\n", host_and_port );
 		return 1;
@@ -122,7 +131,9 @@ int main( int argc, const char** argv, const char** env )
 
 	struct cmd_struct* cmd = get_command( commands, argv[0] );
 	if( !cmd ) {
-		printf( "invalid command (%s); run \"%s help\" to view available commands\n", argv[0], pname );
+		printf( "invalid command (%s); run \"%s help\" to view available commands\n",
+				argv[0],
+				process_name );
 		return 1;
 	}
 	argv++;

@@ -1,12 +1,12 @@
 #define _GNU_SOURCE
 #include "help.h"
 
-#include "option_parser.h"
 #include "client.h"
+#include "option_parser.h"
 
 #include <stdio.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 
 #define MAX_PTS 1024
 
@@ -20,9 +20,7 @@ int run_get( const char*** argv, const char** env )
 	//option vars
 	int help = 0;
 
-	struct option options[] = {
-		OPT_FLAG( 'h', "help", &help, "display this help text" ),
-		OPT_END};
+	struct option options[] = {OPT_FLAG( 'h', "help", &help, "display this help text" ), OPT_END};
 
 	res = parse_options( options, argv );
 	if( res ) {
@@ -43,20 +41,21 @@ int run_get( const char*** argv, const char** env )
 
 	size_t num_returned_pts;
 
-	for(int i = 0; argv[0][i]; i++) {
+	for( int i = 0; argv[0][i]; i++ ) {
 
 		// TODO parse LFM here
 
-		const char *raw_lfm = argv[0][i];
-		int raw_lfm_len = strlen(raw_lfm);
-		printf("sdf\n");
+		const char* raw_lfm = argv[0][i];
+		int raw_lfm_len = strlen( raw_lfm );
+		printf( "sdf\n" );
 
 		if( ( res = menoetius_client_get(
 				  &client, raw_lfm, raw_lfm_len, MAX_PTS, &num_returned_pts, t, y ) ) ) {
-			fprintf(stderr, "failed to get data\n");
-		} else {
-			for(int j = 0; j < num_returned_pts; j++ ) {
-				printf("(%ld %lf) ", t[j], y[j]);
+			fprintf( stderr, "failed to get data\n" );
+		}
+		else {
+			for( int j = 0; j < num_returned_pts; j++ ) {
+				printf( "(%ld %lf) ", t[j], y[j] );
 			}
 		}
 	}
@@ -65,5 +64,3 @@ int run_get( const char*** argv, const char** env )
 error:
 	return res;
 }
-
-
