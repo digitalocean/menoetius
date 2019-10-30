@@ -3,6 +3,7 @@
 /dump
 /menoetius-server
 /menoetius-client
+/menoetius-cli
 /server
 /smoke
 /test
