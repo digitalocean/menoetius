@@ -1,5 +1,8 @@
 #pragma once
 
+#include <time.h>
+#include <stdbool.h>
+
 struct KeyValue
 {
 	char* key;
@@ -13,6 +16,9 @@ struct LFM
 	int num_labels;
 	int max_num_labels;
 };
+
+// NOTE returned lfm must be freed via free_lfm
+int parse_lfm_and_value( const char* s, struct LFM** lfm, double *y, time_t *t, bool *valid_t );
 
 // NOTE returned lfm must be freed via free_lfm
 int parse_lfm( const char* s, struct LFM** lfm );

@@ -15,17 +15,6 @@ extern char host[];
 extern int port;
 extern const char* process_name;
 
-int parse_time( const char* s, time_t* t )
-{
-	struct tm tm;
-	memset( &tm, 0, sizeof( struct tm ) );
-	if( !strptime( s, "%Y-%m-%dT%H:%M:%S", &tm ) ) {
-		return 1;
-	}
-	*t = timegm( &tm );
-	return 0;
-}
-
 int run_put( const char*** argv, const char** env )
 {
 	int res;
@@ -64,16 +53,6 @@ int run_put( const char*** argv, const char** env )
 		return 0;
 	}
 
-	time_t t;
-	if( time_str ) {
-		if( ( res = parse_time( time_str, &t ) ) ) {
-			goto error;
-		}
-	}
-	else {
-		t = time( NULL );
-	}
-
 	struct menoetius_client client;
 	menoetius_client_init( &client, host, port );
 	client.read_buf_size = 1023 + 111; // pick weird values on purpose
@@ -85,18 +64,23 @@ int run_put( const char*** argv, const char** env )
 	char* lfm_binary = NULL;
 	int lfm_binary_len = 0;
 
-	for( int i = 0; argv[0][i]; i++ ) {
+	bool has_t;
+	time_t t;
 
-		// TODO parse LFM and value here
+	for( int i = 0; argv[0][i]; i++ ) {
 
 		const char* raw_lfm = argv[0][i];
 
-		if( ( res = parse_lfm( raw_lfm, &lfm ) ) ) {
+		printf("parsing %s\n", raw_lfm);
+		if( ( res = parse_lfm_and_value( raw_lfm, &lfm, &y, &t, &has_t ) ) ) {
 			fprintf( stderr, "failed to parse %s\n", raw_lfm );
 			goto error;
 		}
+		if( !has_t ) {
+			t = time( NULL ); // use current time
+		}
 
-		printf( "metric name is %s\n", lfm->name );
+		printf( "metric name is %s; y=%lf; t=%ld\n", lfm->name, y, t );
 		for( int i = 0; i < lfm->num_labels; i++ ) {
 			printf( "%s = %s\n", lfm->labels[i].key, lfm->labels[i].value );
 		}
