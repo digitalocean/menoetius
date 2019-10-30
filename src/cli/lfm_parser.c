@@ -20,6 +20,49 @@ int key_value_cmp( const void* a, const void* b )
 	return strcmp( ( (struct KeyValue*)a )->key, ( (struct KeyValue*)b )->key );
 }
 
+void free_lfm( struct LFM *lfm )
+{
+	for( int i = 0; i < lfm->num_labels; i++ ) {
+		free( lfm->labels[i].key );
+		free( lfm->labels[i].value );
+	}
+	if( lfm->name ) {
+		free( lfm->name );
+	}
+	free( lfm->labels );
+	free( lfm );
+}
+
+struct LFM* new_lfm( char *name )
+{
+	struct LFM *lfm = malloc(sizeof(struct LFM));
+
+
+	lfm->name = name;
+	lfm->max_num_labels = 64;
+	lfm->num_labels = 0;
+	lfm->labels = malloc(sizeof(struct KeyValue)*lfm->max_num_labels);
+
+	return lfm;
+}
+
+void lfm_add_label_unsorted( struct LFM *lfm, char *key, char *value )
+{
+	if( lfm->num_labels >= lfm->max_num_labels ) {
+		assert( lfm->max_num_labels > 0 );
+		lfm->max_num_labels *= 2;
+		lfm->labels = realloc( lfm->labels, lfm->max_num_labels );
+	}
+	lfm->labels[ lfm->num_labels ].key = key;
+	lfm->labels[ lfm->num_labels ].value = value;
+	lfm->num_labels++;
+}
+
+void lfm_sort_labels( struct LFM *lfm )
+{
+	qsort( lfm->labels, lfm->num_labels, sizeof( struct KeyValue ), key_value_cmp );
+}
+
 int scanIdent( const char** s, char** lit )
 {
 	int i = 0;
@@ -130,27 +173,24 @@ int scan( const char** s, int* tok, char** lit )
 	return 0;
 }
 
-int parse_lfm( const char* s,
-			   const char** metric_name,
-			   struct KeyValue* metric_labels,
-			   int* num_labels,
-			   int max_key_value_pairs )
+int parse_lfm( const char* s, struct LFM** lfm )
 {
+	struct LFM *lfm_tmp = NULL;
 	int res = 0;
 	int token;
-	char* lit;
+	char* lit = NULL;
 
 	bool done = false;
 
-	const char* metric_name_ = NULL;
-	int i = 0;
+	char* key = NULL;
+	char* metric_name = NULL;
 
 	if( ( res = scan( &s, &token, &lit ) ) ) {
 		goto error;
 	}
 	switch( token ) {
 	case IDENTIFIER_TOKEN:
-		metric_name_ = lit;
+		metric_name = lit;
 		break;
 	case OPEN_BRACE_TOKEN:
 		// metric with no name
@@ -160,7 +200,7 @@ int parse_lfm( const char* s,
 		goto error;
 	}
 
-	if( metric_name_ ) {
+	if( metric_name ) {
 		if( ( res = scan( &s, &token, &lit ) ) ) {
 			goto error;
 		}
@@ -177,6 +217,9 @@ int parse_lfm( const char* s,
 		}
 	}
 
+	lfm_tmp = new_lfm( metric_name );
+	metric_name = NULL;
+
 	while( !done ) {
 		// get key
 		if( ( res = scan( &s, &token, &lit ) ) ) {
@@ -188,7 +231,7 @@ int parse_lfm( const char* s,
 			break;
 		case IDENTIFIER_TOKEN:
 			// metric name only, no labels.
-			metric_labels[i].key = lit;
+			key = lit;
 			break;
 		default:
 			res = 1;
@@ -212,12 +255,11 @@ int parse_lfm( const char* s,
 			res = 1;
 			goto error;
 		}
-		metric_labels[i].value = lit;
-		i++;
-		if( i == max_key_value_pairs ) {
-			res = 2;
-			goto error;
-		}
+
+		// steal the references
+		lfm_add_label_unsorted( lfm_tmp, key, lit );
+		key = NULL;
+		lit = NULL;
 
 		// get comma
 		if( ( res = scan( &s, &token, &lit ) ) ) {
@@ -235,13 +277,27 @@ int parse_lfm( const char* s,
 		}
 	}
 
-	qsort( metric_labels, i, sizeof( struct KeyValue ), key_value_cmp );
+	lfm_sort_labels( lfm_tmp );
 
-	*metric_name = metric_name_;
-	*num_labels = i;
+	// steal refernce (and prevent tmp from being cleaned up)
+	*lfm = lfm_tmp;
+	lfm_tmp = NULL;
 
 	assert( res == 0 );
 
 error:
+	if( lfm_tmp ) {
+		free_lfm( lfm_tmp );
+	}
+	if( key ) {
+		free( key );
+	}
+	if( lit ) {
+		free( lit );
+	}
+	if( metric_name ) {
+		free( metric_name );
+	}
+
 	return res;
 }

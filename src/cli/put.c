@@ -81,9 +81,7 @@ int run_put( const char*** argv, const char** env )
 
 	double y = 3.14;
 
-	const char* metric_name;
-	struct KeyValue metric_labels[MAX_KEY_VALUE_PAIRS];
-	int num_labels = 0;
+	struct LFM *lfm;
 
 	for( int i = 0; argv[0][i]; i++ ) {
 
@@ -91,16 +89,16 @@ int run_put( const char*** argv, const char** env )
 
 		const char* raw_lfm = argv[0][i];
 
-		if( ( res = parse_lfm(
-				  raw_lfm, &metric_name, metric_labels, &num_labels, MAX_KEY_VALUE_PAIRS ) ) ) {
+		if( ( res = parse_lfm( raw_lfm, &lfm ) ) ) {
 			fprintf( stderr, "failed to parse %s\n", raw_lfm );
 			goto error;
 		}
 
-		printf( "metric name is %s\n", metric_name );
-		for( int i = 0; i < num_labels; i++ ) {
-			printf( "%s = %s\n", metric_labels[i].key, metric_labels[i].value );
+		printf( "metric name is %s\n", lfm->name );
+		for( int i = 0; i < lfm->num_labels; i++ ) {
+			printf( "%s = %s\n", lfm->labels[i].key, lfm->labels[i].value );
 		}
+		free_lfm( lfm );
 
 		int raw_lfm_len = strlen( raw_lfm );
 		printf( "sdf\n" );
