@@ -18,6 +18,10 @@ Running tests:
 Running the server:
 
     MENOETIUS_STORAGE_PATH=/tmp/storage_path ./menoetius-server
+    
+Sending data to the server via the cli:
+
+    ./menoetius-cli put 'num_instruments{instrument="flute"}=2@2019-10-23T17:10:02'
 
 Building a deb package: a dockerfile is provided for building a debian package, first
 install docker, then run:
