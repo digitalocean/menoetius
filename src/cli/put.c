@@ -81,7 +81,9 @@ int run_put( const char*** argv, const char** env )
 
 	double y = 3.14;
 
-	struct LFM *lfm;
+	struct LFM* lfm;
+	char* lfm_binary = NULL;
+	int lfm_binary_len = 0;
 
 	for( int i = 0; argv[0][i]; i++ ) {
 
@@ -98,11 +100,11 @@ int run_put( const char*** argv, const char** env )
 		for( int i = 0; i < lfm->num_labels; i++ ) {
 			printf( "%s = %s\n", lfm->labels[i].key, lfm->labels[i].value );
 		}
+
+		encode_binary_lfm( lfm, &lfm_binary, &lfm_binary_len );
 		free_lfm( lfm );
 
-		int raw_lfm_len = strlen( raw_lfm );
-		printf( "sdf\n" );
-		if( ( res = menoetius_client_send( &client, raw_lfm, raw_lfm_len, 1, &t, &y ) ) ) {
+		if( ( res = menoetius_client_send( &client, lfm_binary, lfm_binary_len, 1, &t, &y ) ) ) {
 			fprintf( stderr, "failed to send data\n" );
 		}
 		printf( "done\n" );

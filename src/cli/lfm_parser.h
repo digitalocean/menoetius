@@ -19,11 +19,17 @@ int parse_lfm( const char* s, struct LFM** lfm );
 
 // NOTE: reference to name is stolen, it must exist on the heap
 // returned lfm must be freed via free_lfm
-struct LFM* new_lfm( char *name );
+struct LFM* new_lfm( char* name );
 
-void free_lfm( struct LFM *lfm );
+void free_lfm( struct LFM* lfm );
 
 // NOTE reference to key and value strings are stolen
-void lfm_add_label_unsorted( struct LFM *lfm, char *key, char *value );
+void lfm_add_label_unsorted( struct LFM* lfm, char* key, char* value );
 
-void lfm_sort_labels( struct LFM *lfm );
+void lfm_sort_labels( struct LFM* lfm );
+
+/////////////////////////
+// binary encoder
+
+// s must be freed
+void encode_binary_lfm( struct LFM* lfm, char** s, int* n );

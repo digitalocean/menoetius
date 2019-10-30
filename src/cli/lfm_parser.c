@@ -20,7 +20,7 @@ int key_value_cmp( const void* a, const void* b )
 	return strcmp( ( (struct KeyValue*)a )->key, ( (struct KeyValue*)b )->key );
 }
 
-void free_lfm( struct LFM *lfm )
+void free_lfm( struct LFM* lfm )
 {
 	for( int i = 0; i < lfm->num_labels; i++ ) {
 		free( lfm->labels[i].key );
@@ -33,32 +33,31 @@ void free_lfm( struct LFM *lfm )
 	free( lfm );
 }
 
-struct LFM* new_lfm( char *name )
+struct LFM* new_lfm( char* name )
 {
-	struct LFM *lfm = malloc(sizeof(struct LFM));
-
+	struct LFM* lfm = malloc( sizeof( struct LFM ) );
 
 	lfm->name = name;
 	lfm->max_num_labels = 64;
 	lfm->num_labels = 0;
-	lfm->labels = malloc(sizeof(struct KeyValue)*lfm->max_num_labels);
+	lfm->labels = malloc( sizeof( struct KeyValue ) * lfm->max_num_labels );
 
 	return lfm;
 }
 
-void lfm_add_label_unsorted( struct LFM *lfm, char *key, char *value )
+void lfm_add_label_unsorted( struct LFM* lfm, char* key, char* value )
 {
 	if( lfm->num_labels >= lfm->max_num_labels ) {
 		assert( lfm->max_num_labels > 0 );
 		lfm->max_num_labels *= 2;
 		lfm->labels = realloc( lfm->labels, lfm->max_num_labels );
 	}
-	lfm->labels[ lfm->num_labels ].key = key;
-	lfm->labels[ lfm->num_labels ].value = value;
+	lfm->labels[lfm->num_labels].key = key;
+	lfm->labels[lfm->num_labels].value = value;
 	lfm->num_labels++;
 }
 
-void lfm_sort_labels( struct LFM *lfm )
+void lfm_sort_labels( struct LFM* lfm )
 {
 	qsort( lfm->labels, lfm->num_labels, sizeof( struct KeyValue ), key_value_cmp );
 }
@@ -175,7 +174,7 @@ int scan( const char** s, int* tok, char** lit )
 
 int parse_lfm( const char* s, struct LFM** lfm )
 {
-	struct LFM *lfm_tmp = NULL;
+	struct LFM* lfm_tmp = NULL;
 	int res = 0;
 	int token;
 	char* lit = NULL;
@@ -300,4 +299,50 @@ error:
 	}
 
 	return res;
+}
+
+void encode_binary_lfm( struct LFM* lfm, char** s, int* n )
+{
+	int l;
+	int m = 0;
+	char* t = NULL;
+
+	// count num bytes needed
+	if( lfm->name ) {
+		m += strlen( lfm->name );
+	}
+	for( int i = 0; i < lfm->num_labels; i++ ) {
+		m += 2;
+		m += strlen( lfm->labels[i].key );
+		m += strlen( lfm->labels[i].value );
+	}
+
+	if( m ) {
+		*s = t = malloc( m );
+	}
+	else {
+		*s = NULL;
+	}
+	*n = m;
+
+	if( lfm->name ) {
+		l = strlen( lfm->name );
+		memcpy( t, lfm->name, l );
+		t += l;
+	}
+	for( int i = 0; i < lfm->num_labels; i++ ) {
+		*t = '\0';
+		t++;
+
+		l = strlen( lfm->labels[i].key );
+		memcpy( t, lfm->labels[i].key, l );
+		t += l;
+
+		*t = '\0';
+		t++;
+
+		l = strlen( lfm->labels[i].value );
+		memcpy( t, lfm->labels[i].value, l );
+		t += l;
+	}
 }
