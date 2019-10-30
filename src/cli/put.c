@@ -21,20 +21,16 @@ int run_put( const char*** argv, const char** env )
 	int res;
 
 	//option vars
-	const char* time_str = NULL;
 	int help = 0;
 
-	struct option options[] = {
-		OPT_STR( 't', "time", &time_str, "override time value (YYYY-MM-DDTHH:MM:SS UTC)" ),
-		OPT_FLAG( 'h', "help", &help, "display this help text" ),
-		OPT_END};
+	struct option options[] = {OPT_FLAG( 'h', "help", &help, "display this help text" ), OPT_END};
 
 	res = parse_options( options, argv );
 	if( res ) {
 		goto error;
 	}
 	if( help ) {
-		printf( "Usage: %s put [LFM=VALUE[@TIMESTAMP]] [...]\n", process_name );
+		printf( "Usage: %s put LFM=VALUE[@TIMESTAMP]...\n", process_name );
 		printf( "\n" );
 		printf( "the LFM argument is a lexicographically flattened metric of the form:\n" );
 		printf( "  <METRIC_NAME>{<KEY_LABEL>=\"<VALUE_LABEL>\", ...}\n" );

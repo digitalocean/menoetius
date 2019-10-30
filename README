@@ -21,7 +21,14 @@ Running the server:
     
 Sending data to the server via the cli:
 
+    ./menoetius-cli put 'num_instruments{instrument="flute"}=3'
+
+    # or send historical data
     ./menoetius-cli put 'num_instruments{instrument="flute"}=2@2019-10-23T17:10:02'
+
+Fetching data to from server via the cli:
+
+    ./menoetius-cli get 'num_instruments{instrument="flute"}'
 
 Building a deb package: a dockerfile is provided for building a debian package, first
 install docker, then run:
