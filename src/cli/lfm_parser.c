@@ -573,3 +573,94 @@ void encode_binary_lfm( struct LFM* lfm, char** s, int* n )
 		t += l;
 	}
 }
+
+void encode_human_lfm( struct LFM* lfm, char** s )
+{
+	int m = 0;
+	char* t = NULL;
+
+	printf("asfasd\n");
+	printf("%s\n", lfm->name);
+
+	// count num bytes needed
+	if( lfm->name ) {
+		m += strlen( lfm->name );
+	}
+	for( int i = 0; i < lfm->num_labels; i++ ) {
+		m += 10; //more than needed
+		m += strlen( lfm->labels[i].key );
+		m += strlen( lfm->labels[i].value );
+	}
+
+	m++;
+	*s = t = malloc( m );
+	t[0] = '\0';
+
+	if( lfm->name ) {
+		printf("%s\n", lfm->name);
+		sprintf(t+strlen(t), "%s", lfm->name);
+	}
+	if( lfm->num_labels > 0 ) {
+		for( int i = 0; i < lfm->num_labels; i++ ) {
+			if( i == 0 ) {
+				sprintf(t+strlen(t), "{");
+			} else {
+				sprintf(t+strlen(t), ",");
+			}
+			sprintf(t+strlen(t), "%s=\"%s\"", lfm->labels[i].key, lfm->labels[i].value); // TODO escape strings (and adjust buffer size)
+		}
+		sprintf(t+strlen(t), "}");
+	}
+}
+
+int maxstrlen( const char *s, size_t n)
+{
+	int l = 0;
+	for(;l < n && s[l]; l++);
+	return l;
+}
+
+int parse_binary_lfm( const char* s, size_t n, struct LFM** lfm )
+{
+	int i;
+	int l;
+	int j;
+	char *t[2];
+
+	struct LFM *tmp_lfm = NULL;
+
+	const char *end = s + n;
+	ssize_t remaining;
+
+	for(i = 0; i < 0; i++) {
+		remaining = end-s;
+		if( remaining <= 0 ) {
+			break;
+		}
+		j = i % 2;
+		l = maxstrlen(s, remaining);
+		t[j] = malloc(l+1);
+		memcpy(t[j], s, l);
+		t[j][l] = '\0';
+
+		if( i == 0 ) {
+			tmp_lfm = new_lfm(t[0]);
+		} else {
+			if( i % 2 ) {
+				lfm_add_label_unsorted( tmp_lfm, t[1], t[0] );
+			}
+		}
+
+		s += l+1;
+	}
+
+	if( i % 2 ) {
+		return 1; // not everything consumed
+	}
+
+	lfm_sort_labels( tmp_lfm );
+
+	*lfm = tmp_lfm;
+	tmp_lfm = NULL;
+	return 0;
+}

@@ -17,7 +17,7 @@ Running tests:
 
 Running the server:
 
-    MENOETIUS_STORAGE_PATH=/tmp/storage_path ./menoetius-server
+    MENOETIUS_STORAGE_PATH=/tmp/storage_path MENOETIUS_INDICES=instrument,user_id ./menoetius-server
     
 Sending data to the server via the cli:
 
