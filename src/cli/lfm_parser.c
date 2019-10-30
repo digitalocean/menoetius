@@ -26,7 +26,7 @@ int key_value_cmp( const void* a, const void* b )
 	return strcmp( ( (struct KeyValue*)a )->key, ( (struct KeyValue*)b )->key );
 }
 
-void free_lfm( struct LFM *lfm )
+void free_lfm( struct LFM* lfm )
 {
 	for( int i = 0; i < lfm->num_labels; i++ ) {
 		free( lfm->labels[i].key );
@@ -39,32 +39,31 @@ void free_lfm( struct LFM *lfm )
 	free( lfm );
 }
 
-struct LFM* new_lfm( char *name )
+struct LFM* new_lfm( char* name )
 {
-	struct LFM *lfm = malloc(sizeof(struct LFM));
-
+	struct LFM* lfm = malloc( sizeof( struct LFM ) );
 
 	lfm->name = name;
 	lfm->max_num_labels = 64;
 	lfm->num_labels = 0;
-	lfm->labels = malloc(sizeof(struct KeyValue)*lfm->max_num_labels);
+	lfm->labels = malloc( sizeof( struct KeyValue ) * lfm->max_num_labels );
 
 	return lfm;
 }
 
-void lfm_add_label_unsorted( struct LFM *lfm, char *key, char *value )
+void lfm_add_label_unsorted( struct LFM* lfm, char* key, char* value )
 {
 	if( lfm->num_labels >= lfm->max_num_labels ) {
 		assert( lfm->max_num_labels > 0 );
 		lfm->max_num_labels *= 2;
 		lfm->labels = realloc( lfm->labels, lfm->max_num_labels );
 	}
-	lfm->labels[ lfm->num_labels ].key = key;
-	lfm->labels[ lfm->num_labels ].value = value;
+	lfm->labels[lfm->num_labels].key = key;
+	lfm->labels[lfm->num_labels].value = value;
 	lfm->num_labels++;
 }
 
-void lfm_sort_labels( struct LFM *lfm )
+void lfm_sort_labels( struct LFM* lfm )
 {
 	qsort( lfm->labels, lfm->num_labels, sizeof( struct KeyValue ), key_value_cmp );
 }
@@ -138,9 +137,9 @@ int scanNumberOrTimestamp( const char** s, int* tok, char** lit )
 	int hyphens_found = 0;
 	bool t_found = false;
 	int colons_found = 0;
-	for(;; ) {
+	for( ;; ) {
 		c = s[0][i];
-		if( isdigit(c) ) {
+		if( isdigit( c ) ) {
 			i++;
 			continue;
 		}
@@ -159,21 +158,21 @@ int scanNumberOrTimestamp( const char** s, int* tok, char** lit )
 			if( decimal_found ) {
 				return 1;
 			}
-			switch(hyphens_found) {
-				case 0:
-					if( i != 4 ) {
-						return 1;
-					}
-					break;
-
-				case 1:
-					if( i != 7 ) {
-						return 1;
-					}
-					break;
-
-				default:
+			switch( hyphens_found ) {
+			case 0:
+				if( i != 4 ) {
 					return 1;
+				}
+				break;
+
+			case 1:
+				if( i != 7 ) {
+					return 1;
+				}
+				break;
+
+			default:
+				return 1;
 			}
 			hyphens_found++;
 		}
@@ -198,21 +197,21 @@ int scanNumberOrTimestamp( const char** s, int* tok, char** lit )
 			if( !t_found ) {
 				return 1;
 			}
-			switch(colons_found) {
-				case 0:
-					if( i != 13 ) {
-						return 1;
-					}
-					break;
-
-				case 1:
-					if( i != 16 ) {
-						return 1;
-					}
-					break;
-
-				default:
+			switch( colons_found ) {
+			case 0:
+				if( i != 13 ) {
 					return 1;
+				}
+				break;
+
+			case 1:
+				if( i != 16 ) {
+					return 1;
+				}
+				break;
+
+			default:
+				return 1;
 			}
 			colons_found++;
 		}
@@ -226,7 +225,8 @@ int scanNumberOrTimestamp( const char** s, int* tok, char** lit )
 
 	if( decimal_found ) {
 		*tok = FLOAT_TOKEN;
-	} else if( hyphens_found || t_found || colons_found ) {
+	}
+	else if( hyphens_found || t_found || colons_found ) {
 		if( hyphens_found != 2 || !t_found || colons_found != 2 ) {
 			return 1;
 		}
@@ -234,16 +234,17 @@ int scanNumberOrTimestamp( const char** s, int* tok, char** lit )
 			return 1;
 		}
 		*tok = TIMESTAMP_TOKEN;
-	} else {
+	}
+	else {
 		*tok = INT_TOKEN;
 	}
 
 	*lit = malloc( i + 1 );
-	memcpy(*lit, *s, i);
+	memcpy( *lit, *s, i );
 	lit[0][i] = '\0';
 
 	s[0] += i;
-	
+
 	return 0;
 }
 
@@ -308,7 +309,7 @@ int scan( const char** s, int* tok, char** lit )
 
 int parse_lfm_helper( const char** s, struct LFM** lfm )
 {
-	struct LFM *lfm_tmp = NULL;
+	struct LFM* lfm_tmp = NULL;
 	int res = 0;
 	int token;
 	char* lit = NULL;
@@ -440,19 +441,19 @@ int parse_lfm( const char* s, struct LFM** lfm )
 	return parse_lfm_helper( &s, lfm );
 }
 
-int parse_lfm_and_value( const char* s, struct LFM** lfm, double *y, time_t *t, bool *valid_t )
+int parse_lfm_and_value( const char* s, struct LFM** lfm, double* y, time_t* t, bool* valid_t )
 {
 	int res = 0;
-	struct LFM *lfm_tmp = NULL;
+	struct LFM* lfm_tmp = NULL;
 	int token;
-	char *lit = NULL;
+	char* lit = NULL;
 
 	double yy;
 
 	bool search_for_timestamp = true;
 
 	// lfm
-	if( (res = parse_lfm_helper( &s, &lfm_tmp )) ) {
+	if( ( res = parse_lfm_helper( &s, &lfm_tmp ) ) ) {
 		goto error;
 	}
 
@@ -481,15 +482,15 @@ int parse_lfm_and_value( const char* s, struct LFM** lfm, double *y, time_t *t, 
 	if( ( res = scan( &s, &token, &lit ) ) ) {
 		goto error;
 	}
-	switch(token) {
-		case EOF_TOKEN:
-			search_for_timestamp = false;
-			break;
-		case AT_TOKEN:
-			break;
-		default:
-			res = 1;
-			goto error;
+	switch( token ) {
+	case EOF_TOKEN:
+		search_for_timestamp = false;
+		break;
+	case AT_TOKEN:
+		break;
+	default:
+		res = 1;
+		goto error;
 	}
 
 	if( search_for_timestamp ) {
@@ -527,49 +528,48 @@ error:
 	return res;
 }
 
-
-void encode_binary_lfm( struct LFM *lfm, char **s, int *n )
+void encode_binary_lfm( struct LFM* lfm, char** s, int* n )
 {
 	int l;
 	int m = 0;
-	char *t = NULL;
+	char* t = NULL;
 
 	// count num bytes needed
 	if( lfm->name ) {
-		m += strlen(lfm->name);
+		m += strlen( lfm->name );
 	}
 	for( int i = 0; i < lfm->num_labels; i++ ) {
 		m += 2;
-		m += strlen(lfm->labels[i].key);
-		m += strlen(lfm->labels[i].value);
+		m += strlen( lfm->labels[i].key );
+		m += strlen( lfm->labels[i].value );
 	}
 
 	if( m ) {
-		*s = t = malloc(m);
-	} else {
+		*s = t = malloc( m );
+	}
+	else {
 		*s = NULL;
 	}
 	*n = m;
 
 	if( lfm->name ) {
-		l = strlen(lfm->name);
-		memcpy(t, lfm->name, l);
+		l = strlen( lfm->name );
+		memcpy( t, lfm->name, l );
 		t += l;
 	}
 	for( int i = 0; i < lfm->num_labels; i++ ) {
 		*t = '\0';
 		t++;
 
-		l = strlen(lfm->labels[i].key);
-		memcpy(t, lfm->labels[i].key, l);
+		l = strlen( lfm->labels[i].key );
+		memcpy( t, lfm->labels[i].key, l );
 		t += l;
 
 		*t = '\0';
 		t++;
 
-		l = strlen(lfm->labels[i].value);
-		memcpy(t, lfm->labels[i].value, l);
+		l = strlen( lfm->labels[i].value );
+		memcpy( t, lfm->labels[i].value, l );
 		t += l;
 	}
 }
-

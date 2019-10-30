@@ -5,10 +5,10 @@
 #include "lfm_parser.h"
 #include "option_parser.h"
 
+#include <malloc.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <malloc.h>
 
 #define MAX_KEY_VALUE_PAIRS 1024
 

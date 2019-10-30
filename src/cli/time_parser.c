@@ -14,4 +14,3 @@ int parse_time( const char* s, time_t* t )
 	*t = timegm( &tm );
 	return 0;
 }
-

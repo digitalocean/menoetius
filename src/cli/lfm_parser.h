@@ -1,7 +1,7 @@
 #pragma once
 
-#include <time.h>
 #include <stdbool.h>
+#include <time.h>
 
 struct KeyValue
 {
@@ -18,7 +18,7 @@ struct LFM
 };
 
 // NOTE returned lfm must be freed via free_lfm
-int parse_lfm_and_value( const char* s, struct LFM** lfm, double *y, time_t *t, bool *valid_t );
+int parse_lfm_and_value( const char* s, struct LFM** lfm, double* y, time_t* t, bool* valid_t );
 
 // NOTE returned lfm must be freed via free_lfm
 int parse_lfm( const char* s, struct LFM** lfm );
