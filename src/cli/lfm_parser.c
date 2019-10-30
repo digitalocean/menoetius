@@ -123,7 +123,6 @@ int scanQuotedString( const char** s, char** lit )
 	t[j] = '\0';
 	*s += i;
 	*lit = t;
-	//printf("quoted val is %s, remain is %s\n", t, s[0]);
 	return 0;
 }
 
@@ -502,9 +501,6 @@ int parse_lfm_and_value( const char* s, struct LFM** lfm, double *y, time_t *t, 
 			res = 1;
 			goto error;
 		}
-
-
-		printf("todo parse %s\n", lit);
 
 		if( ( res = parse_time( lit, t ) ) ) {
 			goto error;

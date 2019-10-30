@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <malloc.h>
 
 #define MAX_KEY_VALUE_PAIRS 1024
 
@@ -58,11 +59,11 @@ int run_put( const char*** argv, const char** env )
 	client.read_buf_size = 1023 + 111; // pick weird values on purpose
 	client.write_buf_size = 1023 + 103;
 
-	double y = 3.14;
-
 	struct LFM* lfm;
 	char* lfm_binary = NULL;
 	int lfm_binary_len = 0;
+
+	double y;
 
 	bool has_t;
 	time_t t;
@@ -71,7 +72,6 @@ int run_put( const char*** argv, const char** env )
 
 		const char* raw_lfm = argv[0][i];
 
-		printf("parsing %s\n", raw_lfm);
 		if( ( res = parse_lfm_and_value( raw_lfm, &lfm, &y, &t, &has_t ) ) ) {
 			fprintf( stderr, "failed to parse %s\n", raw_lfm );
 			goto error;
@@ -80,10 +80,10 @@ int run_put( const char*** argv, const char** env )
 			t = time( NULL ); // use current time
 		}
 
-		printf( "metric name is %s; y=%lf; t=%ld\n", lfm->name, y, t );
-		for( int i = 0; i < lfm->num_labels; i++ ) {
-			printf( "%s = %s\n", lfm->labels[i].key, lfm->labels[i].value );
-		}
+		//printf( "metric name is %s; y=%lf; t=%ld\n", lfm->name, y, t );
+		//for( int i = 0; i < lfm->num_labels; i++ ) {
+		//	printf( "%s = %s\n", lfm->labels[i].key, lfm->labels[i].value );
+		//}
 
 		encode_binary_lfm( lfm, &lfm_binary, &lfm_binary_len );
 		free_lfm( lfm );
@@ -91,7 +91,11 @@ int run_put( const char*** argv, const char** env )
 		if( ( res = menoetius_client_send( &client, lfm_binary, lfm_binary_len, 1, &t, &y ) ) ) {
 			fprintf( stderr, "failed to send data\n" );
 		}
-		printf( "done\n" );
+
+		if( lfm_binary ) {
+			free( lfm_binary );
+			lfm_binary = NULL;
+		}
 	}
 
 	res = 0;
