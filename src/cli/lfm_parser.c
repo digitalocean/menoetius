@@ -632,7 +632,7 @@ int parse_binary_lfm( const char* s, size_t n, struct LFM** lfm )
 	const char *end = s + n;
 	ssize_t remaining;
 
-	for(i = 0; i < 0; i++) {
+	for(i = 0; ; i++) {
 		remaining = end-s;
 		if( remaining <= 0 ) {
 			break;
@@ -646,6 +646,7 @@ int parse_binary_lfm( const char* s, size_t n, struct LFM** lfm )
 		if( i == 0 ) {
 			tmp_lfm = new_lfm(t[0]);
 		} else {
+			assert(tmp_lfm);
 			if( i % 2 ) {
 				lfm_add_label_unsorted( tmp_lfm, t[1], t[0] );
 			}
