@@ -2,11 +2,14 @@
 #include "query.h"
 
 #include "client.h"
-#include "lfm_parser.h"
 #include "option_parser.h"
 #include "globals.h"
+#include "my_malloc.h"
 
-#include <malloc.h>
+#include "lfm.h"
+#include "lfm_human_parser.h"
+#include "lfm_binary_parser.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -63,7 +66,7 @@ int run_query( const char*** argv, const char** env )
 	int lfm_binary_len = 0;
 
 	size_t max_num_results = 1024;
-	struct binary_lfm *results = malloc(sizeof(struct binary_lfm) *max_num_results);
+	struct binary_lfm *results = my_malloc(sizeof(struct binary_lfm) *max_num_results);
 	size_t num_results;
 
 	for( int i = 0; argv[0][i]; i++ ) {
@@ -80,14 +83,14 @@ int run_query( const char*** argv, const char** env )
 
 		// when matching, we must set it as __name__
 		if( lfm->name ) {
-			lfm_add_label_unsorted( lfm, strdup("__name__"), lfm->name );
+			lfm_add_label_unsorted( lfm, my_strdup("__name__"), lfm->name );
 			lfm_sort_labels( lfm );
 			lfm->name = NULL;
 		}
 
 		encode_binary_lfm( lfm, &lfm_binary, &lfm_binary_len );
 		int num_matchers = lfm->num_labels;
-		free_lfm( lfm );
+		lfm_free( lfm );
 
 		const char *lfm_matchers = lfm_binary + 1; // must skip first byte which is NULL since we discard the name
 
@@ -109,14 +112,14 @@ int run_query( const char*** argv, const char** env )
 					encode_human_lfm( lfm, &human_lfm );
 					printf("done\n");
 					printf("%s\n", human_lfm);
-					free(human_lfm);
-					free(lfm);
+					my_free(human_lfm);
+					my_free(lfm);
 				}
 			}
 		}
 
 		if( lfm_binary ) {
-			free( lfm_binary );
+			my_free( lfm_binary );
 			lfm_binary = NULL;
 		}
 	}
