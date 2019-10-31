@@ -1,11 +1,14 @@
 #define _GNU_SOURCE
-#include "help.h"
+#include "get.h"
 
 #include "client.h"
-#include "lfm_parser.h"
 #include "option_parser.h"
+#include "my_malloc.h"
 
-#include <malloc.h>
+#include "lfm.h"
+#include "lfm_human_parser.h"
+#include "lfm_binary_parser.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -71,13 +74,13 @@ int run_get( const char*** argv, const char** env )
 
 		const char* raw_lfm = argv[0][i];
 
-		if( ( res = parse_lfm( raw_lfm, &lfm ) ) ) {
+		if( ( res = parse_human_lfm( raw_lfm, &lfm ) ) ) {
 			fprintf( stderr, "failed to parse %s\n", raw_lfm );
 			goto error;
 		}
 
 		encode_binary_lfm( lfm, &lfm_binary, &lfm_binary_len );
-		free_lfm( lfm );
+		lfm_free( lfm );
 
 		if( ( res = menoetius_client_get(
 				  &client, lfm_binary, lfm_binary_len, MAX_PTS, &num_returned_pts, t, y ) ) ) {
@@ -97,7 +100,7 @@ int run_get( const char*** argv, const char** env )
 		}
 
 		if( lfm_binary ) {
-			free( lfm_binary );
+			my_free( lfm_binary );
 			lfm_binary = NULL;
 		}
 	}

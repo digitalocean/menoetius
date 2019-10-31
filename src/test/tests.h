@@ -68,3 +68,17 @@ void test_storage_reload2( void );
 
 // from test_disk_storage
 void test_disk_storage( void );
+
+// from test_client_lfm_parser
+void test_lfm_new_and_free( void );
+void test_lfm_new_and_free_with_labels( void );
+void test_lfm_binary_parser( void );
+void test_lfm_binary_parser2( void );
+void test_lfm_binary_encoder( void );
+void test_lfm_binary_parser_missing_value( void );
+void test_lfm_binary_parser_empty( void );
+void test_lfm_human_encoder( void );
+void test_lfm_human_encoder2( void );
+void test_lfm_human_parser( void );
+void test_lfm_human_parser_no_name( void );
+void test_lfm_binary_encoder_no_name( void );

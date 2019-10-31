@@ -26,6 +26,8 @@
 #define TEST_STATE_FORCE_SYNC 2
 #define TEST_STATE_GET_POINTS 3
 
+#define SERVER_BINARY_NAME "menoetius-server"
+
 bool is_process_healthy( int pid )
 {
 	siginfo_t infop;
@@ -76,7 +78,7 @@ pid_t run_server( const char* storage_path,
 		assert( 0 );
 	}
 	if( pid == 0 ) {
-		char* argv[] = {"server", NULL};
+		char* argv[] = {SERVER_BINARY_NAME, NULL};
 
 		// redirect stdout+stderr to a file
 		int fd = open( "server.log", O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR );
@@ -90,7 +92,7 @@ pid_t run_server( const char* storage_path,
 			LOG_DEBUG( "env=s exported environment\n", *s );
 		}
 
-		res = execve( "server", argv, eb.envs );
+		res = execve( SERVER_BINARY_NAME, argv, eb.envs );
 		LOG_ERROR( "res=d execve returned", res );
 		abort();
 	}

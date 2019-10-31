@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "help.h"
 #include "put.h"
+#include "query.h"
 
 #include "my_malloc.h"
 
@@ -92,6 +93,7 @@ int main( int argc, const char** argv, const char** env )
 		{"help", run_help},
 		{"put", run_put},
 		{"get", run_get},
+		{"query", run_query},
 		{NULL, NULL},
 	};
 

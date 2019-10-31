@@ -5,6 +5,7 @@
 #include "my_malloc.h"
 #include "structured_stream.h"
 #include "time_utils.h"
+#include "lfm.h"
 
 #include <assert.h>
 #include <netdb.h>
@@ -249,6 +250,126 @@ int menoetius_client_get( struct menoetius_client* client,
 
 	*num_pts = num_pts_server;
 	return server_response;
+}
+
+int menoetius_client_query( struct menoetius_client* client, const struct KeyValue* matchers, size_t num_matchers, bool allow_full_scan, struct binary_lfm *results, size_t max_results, size_t *num_results )
+{
+	int res;
+
+	uint64_t offset = 0;
+	uint64_t limit = 1000;
+
+	if( ( res = menoetius_client_ensure_connected( client ) ) ) {
+		LOG_ERROR( "res=s failed to connect", err_str( res ) );
+		return res;
+	}
+
+	if( ( res = structured_stream_write_uint8( client->ss, MENOETIUS_RPC_QUERY_LFMS ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	// write flags
+	uint8_t flags = 0;
+	if( allow_full_scan ) {
+		flags |= 0x01;
+	}
+	if( ( res = structured_stream_write_uint8( client->ss, flags ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+	
+	// write num matchers
+	if( ( res = structured_stream_write_uint8( client->ss, num_matchers ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	// write key and values (hence the *2)
+	for( int i = 0; i < num_matchers; i++ ) {
+		if( ( res = structured_stream_write_uint16_prefixed_string( client->ss, matchers[i].key ) ) ) {
+			LOG_ERROR( "res=s write failed", err_str( res ) );
+			menoetius_client_shutdown( client );
+			return res;
+		}
+		if( ( res = structured_stream_write_uint16_prefixed_string( client->ss, matchers[i].value ) ) ) {
+			LOG_ERROR( "res=s write failed", err_str( res ) );
+			menoetius_client_shutdown( client );
+			return res;
+		}
+	}
+
+	//write offset
+	if( ( res = structured_stream_write_uint64( client->ss, offset ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+	
+	//write limit
+	if( ( res = structured_stream_write_uint64( client->ss, limit ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+	
+	// flush
+	if( ( res = structured_stream_flush( client->ss ) ) ) {
+		LOG_ERROR( "res=s flush failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	size_t i;
+	for(i = 0; ;i++) {
+		const char *raw_lfm;
+		size_t n;
+		if( ( res = structured_stream_read_uint16_prefixed_bytes_inplace(
+				  client->ss, &raw_lfm, &n ) ) ) {
+			LOG_ERROR( "res=s read failed", err_str( res ) );
+			menoetius_client_shutdown( client );
+			return res;
+		}
+		if( n == 0 ) {
+			break;
+		}
+		if( i >= max_results ) {
+			return -1;
+		}
+		if( n >= MAX_BINARY_LFM_SIZE ) {
+			return -1;
+		}
+
+		memcpy(results[i].lfm, raw_lfm, n);
+		results[i].n = n;
+	}
+	*num_results = i;
+
+	if( allow_full_scan ) {
+		uint64_t last_internal_id;
+		if( ( res = structured_stream_read_uint64( client->ss, &last_internal_id ) ) ) {
+			LOG_ERROR( "res=s read failed", err_str( res ) );
+			menoetius_client_shutdown( client );
+			return res;
+		}
+	}
+
+	// read response code
+	uint8_t server_response;
+	if( ( res = structured_stream_read_uint8( client->ss, &server_response ) ) ) {
+		LOG_ERROR( "res=s read failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	// ignore out of date response for now
+	server_response &= ~MENOETIUS_CLUSTER_CONFIG_OUT_OF_DATE;
+
+	return server_response;
+
 }
 
 int menoetius_client_get_status( struct menoetius_client* client, int* status )

@@ -49,6 +49,20 @@ int register_tests( CU_pSuite pSuite )
 	// disk storage tests
 	REGISTER_TEST( test_disk_storage );
 
+	// lfm parser tests
+	REGISTER_TEST( test_lfm_new_and_free );
+	REGISTER_TEST( test_lfm_new_and_free_with_labels );
+	REGISTER_TEST( test_lfm_binary_parser );
+	REGISTER_TEST( test_lfm_binary_parser2 );
+	REGISTER_TEST( test_lfm_binary_encoder );
+	REGISTER_TEST( test_lfm_binary_parser_missing_value );
+	REGISTER_TEST( test_lfm_binary_parser_empty );
+	REGISTER_TEST( test_lfm_human_encoder );
+	REGISTER_TEST( test_lfm_human_encoder2 );
+	REGISTER_TEST( test_lfm_human_parser );
+	REGISTER_TEST( test_lfm_human_parser_no_name );
+	REGISTER_TEST( test_lfm_binary_encoder_no_name );
+
 	return ok;
 }
 
@@ -68,6 +82,10 @@ int main( int argc, const char** argv, const char** env )
 		else {
 			test_name = argv[1];
 		}
+	}
+	else if( argc > 2 ) {
+		fprintf( stderr, "usage: %s [TEST NAME]\n", argv[0] );
+		return 1;
 	}
 
 	/* initialize the CUnit test registry */

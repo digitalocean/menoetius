@@ -13,11 +13,17 @@ Building:
 
 Running tests:
 
+    # unit tests
     ./test
+
+    # we have some heavier-tests that ensure the server can handle reloading data after crashes
+    # this test can take 10 minutes to run. If it fails, check the server.log file for additional errors
+    ./smoke test1
+
 
 Running the server:
 
-    MENOETIUS_STORAGE_PATH=/tmp/storage_path ./menoetius-server
+    MENOETIUS_STORAGE_PATH=/tmp/storage_path MENOETIUS_INDICES=instrument,user_id ./menoetius-server
     
 Sending data to the server via the cli:
 
@@ -29,6 +35,46 @@ Sending data to the server via the cli:
 Fetching data to from server via the cli:
 
     ./menoetius-cli get 'num_instruments{instrument="flute"}'
+
+    # this will output something similar to:
+    1572537106 3.149999
+    1572548947 3.149999
+    1572548974 3.149999
+    1572549018 6.000000
+
+    # use the -t flag to format the time
+    ./menoetius-cli get -t 'num_instruments{instrument="flute"}'
+
+    # which will output
+    2019-10-31T15:51:46 3.149999
+    2019-10-31T19:09:07 3.149999
+    2019-10-31T19:09:34 3.149999
+    2019-10-31T19:10:18 6.000000
+
+Querying metrics:
+
+    # send metrics for 3 different instruments:
+    ./menoetius-cli put 'num_instruments{instrument="triangle"}=0'
+    ./menoetius-cli put 'num_instruments{instrument="guitar"}=2'
+    ./menoetius-cli put 'num_instruments{instrument="flute"}=1'
+
+    # then query all available LFMs:
+    ./menoetius-cli query 'num_instruments'
+
+    # which outputs
+    num_instruments{instrument="flute"}
+    num_instruments{instrument="triangle"}
+    num_instruments{instrument="guitar"}
+
+    # one can also query by labels:
+    ./menoetius-cli query '{instrument="flute"}'
+
+    # which outputs
+    num_instruments{instrument="flute"}
+
+
+    
+
 
 Building a deb package: a dockerfile is provided for building a debian package, first
 install docker, then run:

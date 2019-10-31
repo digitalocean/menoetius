@@ -25,7 +25,7 @@ SERVEROBJ=$(SERVERSRC:%.c=%.o)
 CLISRC=$(wildcard src/common/*.c src/client/*.c src/cli/*.c)
 CLIOBJ=$(CLISRC:%.c=%.o)
 
-TESTSRC=$(wildcard src/common/*.c src/test_common/*.c src/test/*.c)
+TESTSRC=$(wildcard src/common/*.c src/test_common/*.c src/client/*.c src/test/*.c)
 TESTOBJ=$(TESTSRC:%.c=%.o)
 
 debug: CCFLAGS += -DDEBUG_BUILD -DSERVER_BUILD -g
