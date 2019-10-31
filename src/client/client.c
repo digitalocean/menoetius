@@ -5,6 +5,7 @@
 #include "my_malloc.h"
 #include "structured_stream.h"
 #include "time_utils.h"
+#include "lfm.h"
 
 #include <assert.h>
 #include <netdb.h>
@@ -251,12 +252,9 @@ int menoetius_client_get( struct menoetius_client* client,
 	return server_response;
 }
 
-int menoetius_client_query( struct menoetius_client* client, const char* matchers, size_t num_matchers, bool allow_full_scan, struct binary_lfm *results, size_t max_results, size_t *num_results )
+int menoetius_client_query( struct menoetius_client* client, const struct KeyValue* matchers, size_t num_matchers, bool allow_full_scan, struct binary_lfm *results, size_t max_results, size_t *num_results )
 {
 	int res;
-	printf("here 1\n");
-	memcpy(results[0].lfm, "foooo", 2);
-	printf("here 2\n");
 
 	uint64_t offset = 0;
 	uint64_t limit = 1000;
@@ -291,14 +289,17 @@ int menoetius_client_query( struct menoetius_client* client, const char* matcher
 	}
 
 	// write key and values (hence the *2)
-	for( int i = 0; i < num_matchers*2; i++ ) {
-		int l = strlen(matchers);
-		if( ( res = structured_stream_write_uint16_prefixed_bytes( client->ss, matchers, l ) ) ) {
+	for( int i = 0; i < num_matchers; i++ ) {
+		if( ( res = structured_stream_write_uint16_prefixed_string( client->ss, matchers[i].key ) ) ) {
 			LOG_ERROR( "res=s write failed", err_str( res ) );
 			menoetius_client_shutdown( client );
 			return res;
 		}
-		matchers += l + 1;
+		if( ( res = structured_stream_write_uint16_prefixed_string( client->ss, matchers[i].value ) ) ) {
+			LOG_ERROR( "res=s write failed", err_str( res ) );
+			menoetius_client_shutdown( client );
+			return res;
+		}
 	}
 
 	//write offset

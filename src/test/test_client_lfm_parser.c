@@ -137,6 +137,29 @@ void test_lfm_binary_encoder( void )
 	my_malloc_free();
 }
 
+void test_lfm_binary_encoder_no_name( void )
+{
+	my_malloc_init();
+
+	struct LFM *lfm = lfm_new( NULL );
+	lfm_add_label_unsorted( lfm, my_strdup("thekey"), my_strdup("thevalue") );
+	lfm_sort_labels( lfm );
+
+	char *binary_lfm = NULL;
+	int binary_lfm_len = 0;
+	encode_binary_lfm( lfm, &binary_lfm, &binary_lfm_len );
+
+	lfm_free( lfm );
+
+	CU_ASSERT( binary_lfm_len == 0 + 1 + 6 + 1 + 8 );
+	CU_ASSERT( memcmp( binary_lfm, "\x00thekey\x00thevalue", binary_lfm_len ) == 0 );
+
+	my_free( binary_lfm );
+
+	my_malloc_assert_free();
+	my_malloc_free();
+}
+
 void test_lfm_human_encoder( void )
 {
 	my_malloc_init();
@@ -173,6 +196,50 @@ void test_lfm_human_encoder2( void )
 	CU_ASSERT_STRING_EQUAL( human_lfm, "thename" );
 
 	my_free( human_lfm );
+
+	my_malloc_assert_free();
+	my_malloc_free();
+}
+
+void test_lfm_human_parser( void )
+{
+	my_malloc_init();
+
+	int res;
+
+	struct LFM *lfm;
+	res = parse_human_lfm( "myname{mykey=\"myvalue\"}", &lfm );
+	CU_ASSERT_EQUAL_FATAL( res, 0 );
+
+	CU_ASSERT_STRING_EQUAL( lfm->name, "myname" );
+	CU_ASSERT_EQUAL_FATAL( lfm->num_labels, 1 );
+
+	CU_ASSERT_STRING_EQUAL( lfm->labels[0].key, "mykey" );
+	CU_ASSERT_STRING_EQUAL( lfm->labels[0].value, "myvalue" );
+
+	lfm_free( lfm );
+
+	my_malloc_assert_free();
+	my_malloc_free();
+}
+
+void test_lfm_human_parser_no_name( void )
+{
+	my_malloc_init();
+
+	int res;
+
+	struct LFM *lfm;
+	res = parse_human_lfm( "{mykey=\"myvalue\"}", &lfm );
+	CU_ASSERT_EQUAL_FATAL( res, 0 );
+
+	CU_ASSERT_STRING_EQUAL( lfm->name, "" );
+	CU_ASSERT_EQUAL_FATAL( lfm->num_labels, 1 );
+
+	CU_ASSERT_STRING_EQUAL( lfm->labels[0].key, "mykey" );
+	CU_ASSERT_STRING_EQUAL( lfm->labels[0].value, "myvalue" );
+
+	lfm_free( lfm );
 
 	my_malloc_assert_free();
 	my_malloc_free();

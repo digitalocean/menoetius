@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+struct KeyValue;
+
 struct menoetius_client
 {
 	const char* server;
@@ -39,7 +41,7 @@ int menoetius_client_get( struct menoetius_client* client,
 						  int64_t* t,
 						  double* y );
 
-int menoetius_client_query( struct menoetius_client* client, const char* matchers, size_t num_matchers, bool allow_full_scan, struct binary_lfm *results, size_t max_results, size_t *num_results );
+int menoetius_client_query( struct menoetius_client* client, const struct KeyValue* matchers, size_t num_matchers, bool allow_full_scan, struct binary_lfm *results, size_t max_results, size_t *num_results );
 
 int menoetius_client_get_status( struct menoetius_client* client, int* status );
 

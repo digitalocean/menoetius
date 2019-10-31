@@ -263,7 +263,7 @@ int scan( const char** s, int* tok, char** lit )
 	return 0;
 }
 
-int parse_lfm_helper( const char** s, struct LFM** lfm )
+int parse_human_lfm_helper( const char** s, struct LFM** lfm )
 {
 	struct LFM* lfm_tmp = NULL;
 	int res = 0;
@@ -305,6 +305,8 @@ int parse_lfm_helper( const char** s, struct LFM** lfm )
 			res = 1;
 			goto error;
 		}
+	} else {
+		metric_name = my_strdup("");
 	}
 
 	lfm_tmp = lfm_new( metric_name );
@@ -392,12 +394,12 @@ error:
 	return res;
 }
 
-int parse_lfm( const char* s, struct LFM** lfm )
+int parse_human_lfm( const char* s, struct LFM** lfm )
 {
-	return parse_lfm_helper( &s, lfm );
+	return parse_human_lfm_helper( &s, lfm );
 }
 
-int parse_lfm_and_value( const char* s, struct LFM** lfm, double* y, time_t* t, bool* valid_t )
+int parse_human_lfm_and_value( const char* s, struct LFM** lfm, double* y, time_t* t, bool* valid_t )
 {
 	int res = 0;
 	struct LFM* lfm_tmp = NULL;
@@ -409,7 +411,7 @@ int parse_lfm_and_value( const char* s, struct LFM** lfm, double* y, time_t* t, 
 	bool search_for_timestamp = true;
 
 	// lfm
-	if( ( res = parse_lfm_helper( &s, &lfm_tmp ) ) ) {
+	if( ( res = parse_human_lfm_helper( &s, &lfm_tmp ) ) ) {
 		goto error;
 	}
 

@@ -74,7 +74,7 @@ int run_get( const char*** argv, const char** env )
 
 		const char* raw_lfm = argv[0][i];
 
-		if( ( res = parse_lfm( raw_lfm, &lfm ) ) ) {
+		if( ( res = parse_human_lfm( raw_lfm, &lfm ) ) ) {
 			fprintf( stderr, "failed to parse %s\n", raw_lfm );
 			goto error;
 		}
@@ -100,7 +100,7 @@ int run_get( const char*** argv, const char** env )
 		}
 
 		if( lfm_binary ) {
-			free( lfm_binary );
+			my_free( lfm_binary );
 			lfm_binary = NULL;
 		}
 	}
