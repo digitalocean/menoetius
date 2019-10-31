@@ -13,7 +13,13 @@ Building:
 
 Running tests:
 
+    # unit tests
     ./test
+
+    # we have some heavier-tests that ensure the server can handle reloading data after crashes
+    # this test can take 10 minutes to run. If it fails, check the server.log file for additional errors
+    ./smoke test1
+
 
 Running the server:
 
