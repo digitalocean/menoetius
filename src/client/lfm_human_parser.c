@@ -489,9 +489,6 @@ void encode_human_lfm( struct LFM* lfm, char** s )
 	int m = 0;
 	char* t = NULL;
 
-	printf("asfasd\n");
-	printf("%s\n", lfm->name);
-
 	// count num bytes needed
 	if( lfm->name ) {
 		m += strlen( lfm->name );
@@ -507,7 +504,6 @@ void encode_human_lfm( struct LFM* lfm, char** s )
 	t[0] = '\0';
 
 	if( lfm->name ) {
-		printf("%s\n", lfm->name);
 		sprintf(t+strlen(t), "%s", lfm->name);
 	}
 	if( lfm->num_labels > 0 ) {
