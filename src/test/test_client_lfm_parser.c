@@ -3,6 +3,7 @@
 #include "my_malloc.h"
 #include "lfm.h"
 #include "lfm_binary_parser.h"
+#include "lfm_human_parser.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -121,7 +122,6 @@ void test_lfm_binary_encoder( void )
 	lfm_add_label_unsorted( lfm, my_strdup("thekey"), my_strdup("thevalue") );
 	lfm_sort_labels( lfm );
 
-
 	char *binary_lfm = NULL;
 	int binary_lfm_len = 0;
 	encode_binary_lfm( lfm, &binary_lfm, &binary_lfm_len );
@@ -132,6 +132,47 @@ void test_lfm_binary_encoder( void )
 	CU_ASSERT( memcmp( binary_lfm, "thename\x00thekey\x00thevalue", binary_lfm_len ) == 0 );
 
 	my_free( binary_lfm );
+
+	my_malloc_assert_free();
+	my_malloc_free();
+}
+
+void test_lfm_human_encoder( void )
+{
+	my_malloc_init();
+
+	struct LFM *lfm = lfm_new( my_strdup("thename") );
+	lfm_add_label_unsorted( lfm, my_strdup("thekey"), my_strdup("thevalue") );
+	lfm_sort_labels( lfm );
+
+	char *human_lfm = NULL;
+	encode_human_lfm( lfm, &human_lfm );
+
+	lfm_free( lfm );
+
+	CU_ASSERT_STRING_EQUAL( human_lfm, "thename{thekey=\"thevalue\"}" );
+
+	my_free( human_lfm );
+
+	my_malloc_assert_free();
+	my_malloc_free();
+}
+
+void test_lfm_human_encoder2( void )
+{
+	my_malloc_init();
+
+	struct LFM *lfm = lfm_new( my_strdup("thename") );
+	lfm_sort_labels( lfm );
+
+	char *human_lfm = NULL;
+	encode_human_lfm( lfm, &human_lfm );
+
+	lfm_free( lfm );
+
+	CU_ASSERT_STRING_EQUAL( human_lfm, "thename" );
+
+	my_free( human_lfm );
 
 	my_malloc_assert_free();
 	my_malloc_free();

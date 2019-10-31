@@ -57,6 +57,8 @@ int register_tests( CU_pSuite pSuite )
 	REGISTER_TEST( test_lfm_binary_encoder );
 	REGISTER_TEST( test_lfm_binary_parser_missing_value );
 	REGISTER_TEST( test_lfm_binary_parser_empty );
+	REGISTER_TEST( test_lfm_human_encoder );
+	REGISTER_TEST( test_lfm_human_encoder2 );
 
 	return ok;
 }

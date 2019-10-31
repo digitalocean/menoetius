@@ -77,3 +77,5 @@ void test_lfm_binary_parser2( void );
 void test_lfm_binary_encoder( void );
 void test_lfm_binary_parser_missing_value( void );
 void test_lfm_binary_parser_empty( void );
+void test_lfm_human_encoder( void );
+void test_lfm_human_encoder2( void );
