@@ -80,6 +80,39 @@ void test_lfm_binary_parser2( void )
 	my_malloc_free();
 }
 
+void test_lfm_binary_parser_missing_value( void )
+{
+	my_malloc_init();
+
+	int res;
+
+	struct LFM *lfm;
+	res = parse_binary_lfm( "myname\x00mykey\x00myvalue\x00key2", 25, &lfm );
+	CU_ASSERT_EQUAL_FATAL( res, 1 );
+
+	my_malloc_assert_free();
+	my_malloc_free();
+}
+
+void test_lfm_binary_parser_empty( void )
+{
+	my_malloc_init();
+
+	int res;
+
+	struct LFM *lfm;
+	res = parse_binary_lfm( "", 0, &lfm );
+	CU_ASSERT_EQUAL_FATAL( res, 0 );
+
+	CU_ASSERT( lfm->name == NULL );
+	CU_ASSERT( lfm->num_labels == 0 );
+
+	lfm_free( lfm );
+
+	my_malloc_assert_free();
+	my_malloc_free();
+}
+
 void test_lfm_binary_encoder( void )
 {
 	my_malloc_init();

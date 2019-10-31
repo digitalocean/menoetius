@@ -20,8 +20,8 @@ int parse_binary_lfm( const char* s, size_t n, struct LFM** lfm )
 	int i;
 	int l;
 
-	char *t;
-	char *key;
+	char *t = NULL;
+	char *key = NULL;
 
 	struct LFM *tmp_lfm = NULL;
 
@@ -55,6 +55,11 @@ int parse_binary_lfm( const char* s, size_t n, struct LFM** lfm )
 		}
 
 		s += l+1;
+	}
+
+	//special case for empty metrics
+	if( tmp_lfm == NULL ) {
+		tmp_lfm = lfm_new(NULL);
 	}
 
 	if( key || t ) {
