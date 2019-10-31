@@ -19,7 +19,8 @@ NAME=${PACKAGE_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}-${BUILD_VERSION}
 
 rm -rf package/*
 mkdir -p package/$NAME/usr/local/bin
-cp server package/$NAME/usr/local/bin/menoetius
+cp menoetius-server package/$NAME/usr/local/bin/menoetius
+cp menoetius-cli package/$NAME/usr/local/bin/menoetius-cli
 
 mkdir -p package/$NAME/etc/systemd/system/
 cp systemd-menoetius.service package/$NAME/etc/systemd/system/menoetius.service
