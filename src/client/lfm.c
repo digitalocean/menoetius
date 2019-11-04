@@ -50,4 +50,3 @@ struct LFM* lfm_new( char* name )
 
 	return lfm;
 }
-

@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "time_parser.h"
 #include "my_malloc.h"
+#include "time_parser.h"
 
 #define EOF_TOKEN 1
 #define IDENTIFIER_TOKEN 2
@@ -305,8 +305,9 @@ int parse_human_lfm_helper( const char** s, struct LFM** lfm )
 			res = 1;
 			goto error;
 		}
-	} else {
-		metric_name = my_strdup("");
+	}
+	else {
+		metric_name = my_strdup( "" );
 	}
 
 	lfm_tmp = lfm_new( metric_name );
@@ -399,7 +400,8 @@ int parse_human_lfm( const char* s, struct LFM** lfm )
 	return parse_human_lfm_helper( &s, lfm );
 }
 
-int parse_human_lfm_and_value( const char* s, struct LFM** lfm, double* y, time_t* t, bool* valid_t )
+int parse_human_lfm_and_value(
+	const char* s, struct LFM** lfm, double* y, time_t* t, bool* valid_t )
 {
 	int res = 0;
 	struct LFM* lfm_tmp = NULL;
@@ -506,17 +508,21 @@ void encode_human_lfm( struct LFM* lfm, char** s )
 	t[0] = '\0';
 
 	if( lfm->name ) {
-		sprintf(t+strlen(t), "%s", lfm->name);
+		sprintf( t + strlen( t ), "%s", lfm->name );
 	}
 	if( lfm->num_labels > 0 ) {
 		for( int i = 0; i < lfm->num_labels; i++ ) {
 			if( i == 0 ) {
-				sprintf(t+strlen(t), "{");
-			} else {
-				sprintf(t+strlen(t), ",");
+				sprintf( t + strlen( t ), "{" );
 			}
-			sprintf(t+strlen(t), "%s=\"%s\"", lfm->labels[i].key, lfm->labels[i].value); // TODO escape strings (and adjust buffer size)
+			else {
+				sprintf( t + strlen( t ), "," );
+			}
+			sprintf( t + strlen( t ),
+					 "%s=\"%s\"",
+					 lfm->labels[i].key,
+					 lfm->labels[i].value ); // TODO escape strings (and adjust buffer size)
 		}
-		sprintf(t+strlen(t), "}");
+		sprintf( t + strlen( t ), "}" );
 	}
 }

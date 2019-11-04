@@ -27,4 +27,3 @@ void lfm_free( struct LFM* lfm );
 void lfm_add_label_unsorted( struct LFM* lfm, char* key, char* value );
 
 void lfm_sort_labels( struct LFM* lfm );
-

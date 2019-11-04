@@ -1,11 +1,15 @@
 #include "option_parser.h"
 
+#include "cli_globals.h"
+
+#include "benchmark.h"
 #include "get.h"
 #include "globals.h"
 #include "help.h"
 #include "put.h"
 #include "query.h"
 
+#include "log.h"
 #include "my_malloc.h"
 
 #include <assert.h>
@@ -25,30 +29,16 @@
 #include <unistd.h>
 
 #define BUFSIZE 10240
-#define MAX_HOST 1024
 
 //#define ARRAY_SIZE( x ) ( sizeof( x ) / sizeof( x[0] ) )
 
 #define DEFAULT_PROCESS_NAME "menoetius-cli"
-
-const char* process_name;
-char host[MAX_HOST];
-int port = MENOETIUS_PORT;
 
 int is_little_endian()
 {
 	int i = 1;
 	char* p = (char*)&i;
 	return p[0] == 1;
-}
-
-void print_usage( struct cmd_struct* commands, const char* name )
-{
-	fprintf( stderr, "usage: %s <test-name> [<args>]\n", name );
-	fprintf( stderr, "available tests:\n" );
-	for( ; commands->name; commands++ ) {
-		printf( " - %s\n", commands->name );
-	}
 }
 
 int parse_host_and_port( const char* s, char host[MAX_HOST], int* port )
@@ -94,6 +84,7 @@ int main( int argc, const char** argv, const char** env )
 		{"put", run_put},
 		{"get", run_get},
 		{"query", run_query},
+		{"benchmark", run_benchmark},
 		{NULL, NULL},
 	};
 
@@ -101,28 +92,25 @@ int main( int argc, const char** argv, const char** env )
 	// should be ifdef guarded
 	my_malloc_init();
 
-	if( !argv[0] ) {
-		print_usage( commands, DEFAULT_PROCESS_NAME );
-		return 2;
-	}
-	process_name = argv[0];
-	argv++;
+	set_log_level_from_env_variables( env );
 
-	if( !process_name[0] ) {
+	if( argv[0] != NULL ) {
+		process_name = argv[0];
+		argv++;
+		if( !process_name[0] ) {
+			// argv[0] is "", odd but we'll accept it
+			process_name = DEFAULT_PROCESS_NAME;
+		}
+	}
+	else {
 		process_name = DEFAULT_PROCESS_NAME;
+		help = 1; // force help, argv is bad
 	}
 
 	res = parse_options( options, &argv );
-	if( res || help ) {
-		print_usage( commands, process_name );
+	if( res || help || !argv[0] ) {
+		run_help( NULL, env );
 		return res ? 1 : 0;
-	}
-
-	if( !argv[0] ) {
-		fprintf( stderr,
-				 "missing command name; run \"%s help\" to view available commands\n",
-				 process_name );
-		return 1;
 	}
 
 	res = parse_host_and_port( host_and_port, host, &port );

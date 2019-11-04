@@ -1,23 +1,21 @@
 #define _GNU_SOURCE
 #include "get.h"
 
+#include "cli_globals.h"
+
 #include "client.h"
-#include "option_parser.h"
 #include "my_malloc.h"
+#include "option_parser.h"
 
 #include "lfm.h"
-#include "lfm_human_parser.h"
 #include "lfm_binary_parser.h"
+#include "lfm_human_parser.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
 #define MAX_PTS 1024
-
-extern char host[];
-extern int port;
-extern const char* process_name;
 
 int run_get( const char*** argv, const char** env )
 {
@@ -37,7 +35,7 @@ int run_get( const char*** argv, const char** env )
 		goto error;
 	}
 	if( help ) {
-		printf( "Usage: %s get [LFM]...\n", process_name );
+		printf( "Usage: %s [--host <host>] get [LFM]...\n", process_name );
 		printf( "\n" );
 		printf( "the LFM argument is a lexicographically flattened metric of the form:\n" );
 		printf( "  <METRIC_NAME>{<KEY_LABEL>=\"<VALUE_LABEL>\", ...}\n" );

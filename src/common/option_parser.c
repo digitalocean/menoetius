@@ -180,7 +180,7 @@ void print_help( struct option* options )
 		}
 	}
 
-	printf( "Flags:\n" );
+	printf( "Options:\n" );
 
 	for( p = options; p->type != OPTION_END; p++ ) {
 		printf( "  " );

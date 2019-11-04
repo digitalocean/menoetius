@@ -1,9 +1,9 @@
 #include "tests.h"
 
-#include "my_malloc.h"
 #include "lfm.h"
 #include "lfm_binary_parser.h"
 #include "lfm_human_parser.h"
+#include "my_malloc.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -13,9 +13,9 @@ void test_lfm_new_and_free( void )
 {
 	my_malloc_init();
 
-	struct LFM *lfm = lfm_new(my_strdup("hello"));
+	struct LFM* lfm = lfm_new( my_strdup( "hello" ) );
 
-	lfm_free(lfm);
+	lfm_free( lfm );
 
 	my_malloc_assert_free();
 	my_malloc_free();
@@ -25,12 +25,12 @@ void test_lfm_new_and_free_with_labels( void )
 {
 	my_malloc_init();
 
-	struct LFM *lfm = lfm_new(my_strdup("hello"));
+	struct LFM* lfm = lfm_new( my_strdup( "hello" ) );
 
-	lfm_add_label_unsorted( lfm, my_strdup("mykey"), my_strdup("myval") );
+	lfm_add_label_unsorted( lfm, my_strdup( "mykey" ), my_strdup( "myval" ) );
 	lfm_sort_labels( lfm );
 
-	lfm_free(lfm);
+	lfm_free( lfm );
 
 	my_malloc_assert_free();
 	my_malloc_free();
@@ -42,7 +42,7 @@ void test_lfm_binary_parser( void )
 
 	int res;
 
-	struct LFM *lfm;
+	struct LFM* lfm;
 	res = parse_binary_lfm( "myname\x00mykey\x00myvalue", 20, &lfm );
 	CU_ASSERT_EQUAL_FATAL( res, 0 );
 
@@ -64,7 +64,7 @@ void test_lfm_binary_parser2( void )
 
 	int res;
 
-	struct LFM *lfm;
+	struct LFM* lfm;
 	// ensure the remaining ___ bytes are not used since they are not included in the 20 char limit
 	res = parse_binary_lfm( "myname\x00mykey\x00myvalue___", 20, &lfm );
 	CU_ASSERT_EQUAL_FATAL( res, 0 );
@@ -87,7 +87,7 @@ void test_lfm_binary_parser_missing_value( void )
 
 	int res;
 
-	struct LFM *lfm;
+	struct LFM* lfm;
 	res = parse_binary_lfm( "myname\x00mykey\x00myvalue\x00key2", 25, &lfm );
 	CU_ASSERT_EQUAL_FATAL( res, 1 );
 
@@ -101,7 +101,7 @@ void test_lfm_binary_parser_empty( void )
 
 	int res;
 
-	struct LFM *lfm;
+	struct LFM* lfm;
 	res = parse_binary_lfm( "", 0, &lfm );
 	CU_ASSERT_EQUAL_FATAL( res, 0 );
 
@@ -118,11 +118,11 @@ void test_lfm_binary_encoder( void )
 {
 	my_malloc_init();
 
-	struct LFM *lfm = lfm_new( my_strdup("thename") );
-	lfm_add_label_unsorted( lfm, my_strdup("thekey"), my_strdup("thevalue") );
+	struct LFM* lfm = lfm_new( my_strdup( "thename" ) );
+	lfm_add_label_unsorted( lfm, my_strdup( "thekey" ), my_strdup( "thevalue" ) );
 	lfm_sort_labels( lfm );
 
-	char *binary_lfm = NULL;
+	char* binary_lfm = NULL;
 	int binary_lfm_len = 0;
 	encode_binary_lfm( lfm, &binary_lfm, &binary_lfm_len );
 
@@ -141,11 +141,11 @@ void test_lfm_binary_encoder_no_name( void )
 {
 	my_malloc_init();
 
-	struct LFM *lfm = lfm_new( NULL );
-	lfm_add_label_unsorted( lfm, my_strdup("thekey"), my_strdup("thevalue") );
+	struct LFM* lfm = lfm_new( NULL );
+	lfm_add_label_unsorted( lfm, my_strdup( "thekey" ), my_strdup( "thevalue" ) );
 	lfm_sort_labels( lfm );
 
-	char *binary_lfm = NULL;
+	char* binary_lfm = NULL;
 	int binary_lfm_len = 0;
 	encode_binary_lfm( lfm, &binary_lfm, &binary_lfm_len );
 
@@ -164,11 +164,11 @@ void test_lfm_human_encoder( void )
 {
 	my_malloc_init();
 
-	struct LFM *lfm = lfm_new( my_strdup("thename") );
-	lfm_add_label_unsorted( lfm, my_strdup("thekey"), my_strdup("thevalue") );
+	struct LFM* lfm = lfm_new( my_strdup( "thename" ) );
+	lfm_add_label_unsorted( lfm, my_strdup( "thekey" ), my_strdup( "thevalue" ) );
 	lfm_sort_labels( lfm );
 
-	char *human_lfm = NULL;
+	char* human_lfm = NULL;
 	encode_human_lfm( lfm, &human_lfm );
 
 	lfm_free( lfm );
@@ -185,10 +185,10 @@ void test_lfm_human_encoder2( void )
 {
 	my_malloc_init();
 
-	struct LFM *lfm = lfm_new( my_strdup("thename") );
+	struct LFM* lfm = lfm_new( my_strdup( "thename" ) );
 	lfm_sort_labels( lfm );
 
-	char *human_lfm = NULL;
+	char* human_lfm = NULL;
 	encode_human_lfm( lfm, &human_lfm );
 
 	lfm_free( lfm );
@@ -207,7 +207,7 @@ void test_lfm_human_parser( void )
 
 	int res;
 
-	struct LFM *lfm;
+	struct LFM* lfm;
 	res = parse_human_lfm( "myname{mykey=\"myvalue\"}", &lfm );
 	CU_ASSERT_EQUAL_FATAL( res, 0 );
 
@@ -229,7 +229,7 @@ void test_lfm_human_parser_no_name( void )
 
 	int res;
 
-	struct LFM *lfm;
+	struct LFM* lfm;
 	res = parse_human_lfm( "{mykey=\"myvalue\"}", &lfm );
 	CU_ASSERT_EQUAL_FATAL( res, 0 );
 
