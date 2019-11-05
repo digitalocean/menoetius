@@ -110,7 +110,7 @@ int run_shutdown_test( int num_keys, int num_pts, int64_t start_time )
 
 			// Send data
 			LOG_DEBUG( "t=d i=d lfm=*s y=f writing points", t, i, lfm_len, lfm, y );
-			if( ( res = menoetius_client_send( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
+			if( ( res = menoetius_client_send_sync( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
 				LOG_ERROR( "res=d failed to send points" );
 				res = 1;
 				goto error;

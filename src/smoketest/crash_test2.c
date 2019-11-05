@@ -68,7 +68,7 @@ int run_crash_test2()
 	for( ;; ) {
 		y = get_test_pt( 1 );
 		LOG_DEBUG( "t=d lfm=*s y=f writing points", t, lfm_len, lfm, y );
-		if( ( res = menoetius_client_send( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
+		if( ( res = menoetius_client_send_sync( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
 			LOG_INFO( "res=d failed to send points", res );
 			break;
 		}
@@ -110,7 +110,7 @@ int run_crash_test2()
 	for( int i = 0; i < n; i++ ) {
 		y = get_test_pt( 1 );
 		LOG_DEBUG( "t=d lfm=*s y=f writing points", t, lfm_len, lfm, y );
-		if( ( res = menoetius_client_send( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
+		if( ( res = menoetius_client_send_sync( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
 			LOG_ERROR( "res=d failed to send points", res );
 			goto error;
 		}

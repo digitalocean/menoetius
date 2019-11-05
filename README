@@ -72,6 +72,41 @@ Querying metrics:
     # which outputs
     num_instruments{instrument="flute"}
 
+Benchmarking:
+
+    # build a release version
+    make clean && make release
+
+    # clear old storage (if applicable)
+    rm /tmp/storage_path/*
+
+    # start the server
+    LOG_LEVEL=ERROR MENOETIUS_STORAGE_PATH=/tmp/storage_path MENOETIUS_INDICES=instrument,user_id ./menoetius-server
+
+    # run a benchmark
+    LOG_LEVEL=ERROR ./menoetius-cli benchmark
+
+    # example output:
+    benchmark progress: 100%
+    sent 14400000 total samples in 61.434876 seconds
+    number of metric names = 10000
+    number of points per metric = 1440
+    ingestion rate = 234394.55 metrics/second
+
+Sample Benchmark:
+
+    Running on a i7-8650U CPU @ 1.90GHz
+    
+    test 1: 10,000 unique metrics named "benchmark{i=0..9999}"; each metric storing 3.14 as the value repeated 1,440 times.
+    ingestion rate of 234394.55 metrics/second. Disk usage of 1.52 bytes per data sample (21MB*1024*1024 / 14,400,000 data points).
+    
+    test 2: 1,000 unique metrics named "benchmark{i=0..999}"; each metric storing 3.14 as the value repeated 14,400 times. (10x more data points, 1/10th metric names)
+    ingestion rate of 254599.16 metrics/second. Disk usage of 0.37 bytes per data sample (5.1MB*1024*1024 / 14,400,000 data points).
+    
+    test 3: 100 unique metrics named "benchmark{i=0..99}"; each metric storing 3.14 as the value repeated 144,000 times. (10x more data points, 1/10th metric names)
+    ingestion rate of 258741.93 metrics/second. Disk usage of 0.28 bytes per data sample (3.8MB*1024*1024 / 14,400,000 data points).
+    
+    TODO: need to get actual server metric timeseries to use for this benchmark, then add some graphs here.
 
     
 

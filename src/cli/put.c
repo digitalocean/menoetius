@@ -85,7 +85,8 @@ int run_put( const char*** argv, const char** env )
 		encode_binary_lfm( lfm, &lfm_binary, &lfm_binary_len );
 		lfm_free( lfm );
 
-		if( ( res = menoetius_client_send( &client, lfm_binary, lfm_binary_len, 1, &t, &y ) ) ) {
+		if( ( res =
+				  menoetius_client_send_sync( &client, lfm_binary, lfm_binary_len, 1, &t, &y ) ) ) {
 			fprintf( stderr, "failed to send data\n" );
 		}
 
