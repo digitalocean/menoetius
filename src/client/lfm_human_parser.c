@@ -27,7 +27,7 @@
 int scanIdent( const char** s, char** lit )
 {
 	int i = 0;
-	if( !isalpha( s[0][i] ) ) {
+	if( !isalpha( s[0][i] ) && s[0][i] != '_' ) {
 		return 1;
 	}
 	i++;
@@ -217,7 +217,7 @@ int scan( const char** s, int* tok, char** lit )
 		( *s )++;
 	}
 
-	if( isalpha( c ) ) {
+	if( isalpha( c ) || c == '_' ) {
 		*tok = IDENTIFIER_TOKEN;
 		return scanIdent( s, lit );
 	}
@@ -329,6 +329,9 @@ int parse_human_lfm_helper( const char** s, struct LFM** lfm )
 		default:
 			res = 1;
 			goto error;
+		}
+		if( done ) {
+			break;
 		}
 
 		// get equal
