@@ -2,6 +2,7 @@
 #include "test1.h"
 #include "test2.h"
 #include "test3.h"
+#include "test4.h"
 
 #include "escape_key.h"
 #include "log.h"
@@ -58,6 +59,7 @@ int main( int argc, const char** argv, const char** env )
 		{"test1", run_test1},
 		{"test2", run_test2},
 		{"test3", run_test3},
+		{"test4", run_test4},
 		{"all", run_all_tests},
 		{NULL, NULL},
 	};

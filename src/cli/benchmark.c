@@ -84,21 +84,20 @@ int run_benchmark( const char*** argv, const char** env )
 			// print a '.' for each percentage
 			if( ++progress_report_i == progress_report_interval ) {
 				percent_done++;
-				printf( "%c[2K\r", 27 );
-				printf( "benchmark progress: %d%%", percent_done );
+				printf( "%c[2K\r", 27 ); // clear and reset line
+				printf( "benchmark progress: %d%%", percent_done ); // do NOT add \n here
 				fflush( stdout );
 				progress_report_i = 0;
 			}
 		}
 		t++; // TODO command line option
 	}
+	printf( "\n" );
 
 	if( ( res = menoetius_client_flush( &client ) ) ) {
 		fprintf( stderr, "failed to send data\n" );
 		goto error;
 	}
-
-	printf( "\n" );
 
 	double duration = ( time_microseconds() - start ) / 1000000.0;
 	double ingestion_rate = total_samples / duration;
