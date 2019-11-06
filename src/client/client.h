@@ -15,6 +15,14 @@ struct menoetius_client
 
 	int fd;
 	struct structured_stream* ss;
+
+	// used to queue sent metrics before flushing them
+	char* queued_metrics;
+	int queued_metrics_max_size;
+	int queued_metrics_len;
+
+	int num_queued_metrics;
+	int num_queued_metrics_flush;
 };
 
 #define MAX_BINARY_LFM_SIZE 1024
@@ -26,12 +34,21 @@ struct binary_lfm
 
 int menoetius_client_init( struct menoetius_client* client, const char* server, int port );
 
+int menoetius_client_send_sync( struct menoetius_client* client,
+								const char* key,
+								size_t key_len,
+								size_t num_pts,
+								int64_t* t,
+								double* y );
+
 int menoetius_client_send( struct menoetius_client* client,
 						   const char* key,
 						   size_t key_len,
 						   size_t num_pts,
 						   int64_t* t,
 						   double* y );
+
+int menoetius_client_flush( struct menoetius_client* client );
 
 int menoetius_client_get( struct menoetius_client* client,
 						  const char* key,

@@ -295,6 +295,9 @@ void* my_malloc( size_t n )
 		i = NO_POOL;
 		//LOG_DEBUG("n=d malloc non-pool item", n );
 		p = malloc( n );
+		if( p == NULL ) {
+			LOG_CRITICAL( "n=d, malloc failed", n );
+		}
 		*( (uint64_t*)p ) = i;
 		p += sizeof( uint64_t );
 #ifdef DEBUG_BUILD
@@ -316,6 +319,9 @@ void* my_malloc( size_t n )
 		else {
 			//LOG_DEBUG("n=d malloc pool item", n );
 			p = malloc( n );
+			if( p == NULL ) {
+				LOG_CRITICAL( "n=d, malloc failed", n );
+			}
 			*( (uint64_t*)p ) = i;
 			p += sizeof( uint64_t );
 #ifdef DEBUG_BUILD
@@ -342,6 +348,9 @@ void* my_realloc( void* p, size_t n )
 	int i = *( (uint64_t*)pp );
 	if( i >= num_pools ) {
 		q = realloc( pp, n + sizeof( uint64_t ) );
+		if( q == NULL ) {
+			LOG_CRITICAL( "n=d realloc failed", n );
+		}
 		q += sizeof( uint64_t );
 		return q;
 	}

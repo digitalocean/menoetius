@@ -19,6 +19,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+void menoetius_client_grow_queued_metrics( struct menoetius_client* client, int min_growth );
+
 int menoetius_client_init( struct menoetius_client* client, const char* server, int port )
 {
 	client->server = server;
@@ -27,6 +29,13 @@ int menoetius_client_init( struct menoetius_client* client, const char* server, 
 	client->write_buf_size = 1024;
 
 	client->fd = -1;
+
+	client->queued_metrics_max_size = 16384;
+	client->queued_metrics = my_malloc( client->queued_metrics_max_size );
+	client->queued_metrics_len = 0;
+
+	client->num_queued_metrics = 0;
+	client->num_queued_metrics_flush = 1000;
 
 	return 0;
 }
@@ -97,12 +106,12 @@ int menoetius_client_ensure_connected( struct menoetius_client* client )
 	return 0;
 }
 
-int menoetius_client_send( struct menoetius_client* client,
-						   const char* key,
-						   size_t key_len,
-						   size_t num_pts,
-						   int64_t* t,
-						   double* y )
+int menoetius_client_send_sync( struct menoetius_client* client,
+								const char* key,
+								size_t key_len,
+								size_t num_pts,
+								int64_t* t,
+								double* y )
 {
 	int i;
 	int res;
@@ -165,6 +174,115 @@ int menoetius_client_send( struct menoetius_client* client,
 	server_response &= ~MENOETIUS_CLUSTER_CONFIG_OUT_OF_DATE;
 
 	LOG_INFO( "num_pts=d resp=d sent points", num_pts, server_response );
+	return server_response;
+}
+
+int menoetius_client_send( struct menoetius_client* client,
+						   const char* key,
+						   size_t key_len,
+						   size_t num_pts,
+						   int64_t* t,
+						   double* y )
+{
+	int i;
+
+	int n = sizeof( uint16_t ) + key_len + sizeof( uint32_t ) +
+			( sizeof( uint64_t ) + sizeof( double ) ) * num_pts;
+	menoetius_client_grow_queued_metrics( client, n );
+
+	char* s = client->queued_metrics + client->queued_metrics_len;
+
+	memcpy( s, &key_len, sizeof( uint16_t ) );
+	s += sizeof( uint16_t );
+
+	memcpy( s, key, key_len );
+	s += key_len;
+
+	memcpy( s, &num_pts, sizeof( uint32_t ) );
+	s += sizeof( uint32_t );
+
+	for( i = 0; i < num_pts; i++ ) {
+		memcpy( s, &( t[i] ), sizeof( uint64_t ) );
+		s += sizeof( uint64_t );
+
+		memcpy( s, &( y[i] ), sizeof( double ) );
+		s += sizeof( double );
+	}
+
+	assert( s - client->queued_metrics == n + client->queued_metrics_len );
+	client->queued_metrics_len += n;
+
+	client->num_queued_metrics++;
+	if( client->num_queued_metrics >= client->num_queued_metrics_flush ) {
+		return menoetius_client_flush( client );
+	}
+
+	return 0;
+}
+
+int menoetius_client_flush( struct menoetius_client* client )
+{
+	int res;
+
+	if( ( res = menoetius_client_ensure_connected( client ) ) ) {
+		LOG_ERROR( "res=s failed to connect", err_str( res ) );
+		return res;
+	}
+
+	if( ( res = structured_stream_write_uint8( client->ss, MENOETIUS_RPC_PUT_DATA ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	size_t chunk_size = 32768;
+	size_t remaining = client->queued_metrics_len;
+	size_t n;
+	char* s = client->queued_metrics;
+	while( remaining > 0 ) {
+		n = remaining;
+		if( n > chunk_size ) {
+			n = chunk_size;
+		}
+		if( ( res = structured_stream_write_bytes( client->ss, s, n ) ) ) {
+			LOG_ERROR( "res=s write failed", err_str( res ) );
+			menoetius_client_shutdown( client );
+			return res;
+		}
+		remaining -= n;
+		s += n;
+	}
+
+	// end of batch marker (empty string "")
+	if( ( res = structured_stream_write_uint16_prefixed_bytes( client->ss, NULL, 0 ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		return res;
+	}
+
+	if( ( res = structured_stream_flush( client->ss ) ) ) {
+		LOG_ERROR( "res=s flush failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	// wait for response from server
+	uint8_t server_response;
+	if( ( res = structured_stream_read_uint8( client->ss, &server_response ) ) ) {
+		LOG_ERROR( "res=s failed to read", err_str( res ) );
+		return res;
+	}
+
+	// ignore out of date response for now
+	server_response &= ~MENOETIUS_CLUSTER_CONFIG_OUT_OF_DATE;
+
+	LOG_INFO( "num_pts=d resp=d flushed points", client->num_queued_metrics, server_response );
+
+	// TODO re-evaluate if this should be done here, or if batches should be done outside of the client?
+	if( server_response == 0 ) {
+		client->queued_metrics_len = 0;
+		client->num_queued_metrics = 0;
+	}
+
 	return server_response;
 }
 
@@ -487,4 +605,15 @@ int menoetius_client_test_hook( struct menoetius_client* client, uint64_t flags 
 	}
 
 	return server_status;
+}
+
+void menoetius_client_grow_queued_metrics( struct menoetius_client* client, int min_growth )
+{
+	size_t new_size = client->queued_metrics_max_size;
+	while( ( new_size - client->queued_metrics_len ) < min_growth ) {
+		new_size *= 2;
+	}
+
+	client->queued_metrics_max_size = new_size;
+	client->queued_metrics = my_realloc( client->queued_metrics, client->queued_metrics_max_size );
 }

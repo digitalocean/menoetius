@@ -213,6 +213,8 @@ int handle_conn_put_data( struct conn_data* data )
 			ENSURE_OK( structured_stream_read_int64( data->ss, &t ) );
 			ENSURE_OK( structured_stream_read_double( data->ss, &y ) );
 
+			LOG_TRACE( "ctx=ctx lfm=*s t=d y=f decode", data->log_ctx, key_len, key, t, y );
+
 			if( t < earliest_time ) {
 				LOG_TRACE( "ctx=ctx lfm=*s t=d earliest=d rejecting point",
 						   data->log_ctx,

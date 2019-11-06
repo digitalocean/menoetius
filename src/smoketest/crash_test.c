@@ -101,7 +101,7 @@ int run_crash_test( int num_keys,
 			if( test_state == TEST_STATE_SEND_POINT ) {
 				y = get_test_pt( ( user_id + 1 ) * ( i + 1 ) );
 				LOG_DEBUG( "t=d i=d lfm=*s y=f writing points", t, i, lfm_len, lfm, y );
-				if( ( res = menoetius_client_send( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
+				if( ( res = menoetius_client_send_sync( &client, lfm, lfm_len, 1, &t, &y ) ) ) {
 					LOG_ERROR( "res=d failed to send points" );
 					num_send_crashes++;
 					goto retry;

@@ -409,8 +409,6 @@ error:
 
 int tsc_write_int64( char* buf, size_t n, size_t bit_index, int64_t x, size_t* new_bit_index )
 {
-	assert( -2147483648 <= x &&
-			x <= 2147483647 ); // go tszf uses 32bit, gotta keep our test the same
 	assert( buf );
 	assert( new_bit_index );
 	int res = ERR_OK;
