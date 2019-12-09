@@ -39,6 +39,11 @@ int run_get_config( const char*** argv, const char** env )
 		return 0;
 	}
 
+	if( **argv ) {
+		fprintf( stderr, "error: unexpected argument %s\n", **argv );
+		return 1;
+	}
+
 	struct menoetius_client client;
 	menoetius_client_init( &client, host, port );
 
