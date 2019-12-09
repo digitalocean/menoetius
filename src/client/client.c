@@ -529,7 +529,9 @@ int menoetius_client_get_status( struct menoetius_client* client, int* status )
 	return 0;
 }
 
-int menoetius_client_get_cluster_config( struct menoetius_client* client )
+int menoetius_client_get_config( struct menoetius_client* client,
+								 char* cluster_config,
+								 size_t max_config_size )
 {
 	int res;
 
@@ -558,14 +560,61 @@ int menoetius_client_get_cluster_config( struct menoetius_client* client )
 	}
 
 	size_t n;
-	const char* cluster_config;
+	const char* cluster_config_tmp;
 	if( ( res = structured_stream_read_uint16_prefixed_bytes_inplace(
-			  client->ss, &cluster_config, &n ) ) ) {
+			  client->ss, &cluster_config_tmp, &n ) ) ) {
 		LOG_ERROR( "res=s read failed", err_str( res ) );
 		menoetius_client_shutdown( client );
 		return res;
 	}
-	LOG_INFO( "n=d got the config", n );
+	if( n > max_config_size ) {
+		return 1;
+	}
+	memcpy( cluster_config, cluster_config_tmp, n );
+	cluster_config[n] = 0;
+
+	return 0;
+}
+
+int menoetius_client_set_config( struct menoetius_client* client, const char* cluster_config )
+{
+	int res;
+
+	if( ( res = menoetius_client_ensure_connected( client ) ) ) {
+		LOG_ERROR( "res=s failed to connect", err_str( res ) );
+		return res;
+	}
+
+	if( ( res = structured_stream_write_uint8( client->ss, MENOETIUS_RPC_SET_CLUSTER_CONFIG ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	if( ( res = structured_stream_write_uint16_prefixed_string( client->ss, cluster_config ) ) ) {
+		LOG_ERROR( "res=s write failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	if( ( res = structured_stream_flush( client->ss ) ) ) {
+		LOG_ERROR( "res=s flush failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	uint8_t server_status;
+	if( ( res = structured_stream_read_uint8( client->ss, &server_status ) ) ) {
+		LOG_ERROR( "res=s read failed", err_str( res ) );
+		menoetius_client_shutdown( client );
+		return res;
+	}
+
+	if( server_status != MENOETIUS_STATUS_OK ) {
+		LOG_ERROR( "res=d unexpected server status", server_status );
+		menoetius_client_shutdown( client );
+		return 1;
+	}
 
 	return 0;
 }

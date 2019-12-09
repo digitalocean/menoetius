@@ -68,4 +68,10 @@ int menoetius_client_query( struct menoetius_client* client,
 
 int menoetius_client_get_status( struct menoetius_client* client, int* status );
 
+int menoetius_client_get_config( struct menoetius_client* client,
+								 char* cluster_config,
+								 size_t MAX_CONFIG_SIZE );
+
+int menoetius_client_set_config( struct menoetius_client* client, const char* cluster_config );
+
 int menoetius_client_test_hook( struct menoetius_client* client, uint64_t flags );

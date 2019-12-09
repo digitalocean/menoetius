@@ -8,9 +8,9 @@
 #include "my_malloc.h"
 #include "option_parser.h"
 #include "shutdown_test.h"
+#include "structured_stream.h"
 #include "test_storage_utils.h"
 #include "test_utils.h"
-#include "structured_stream.h"
 
 #include <assert.h>
 #include <fcntl.h>
@@ -21,8 +21,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 // hidden from client.h, not meant for public consumption
 int menoetius_client_ensure_connected( struct menoetius_client* client );
@@ -42,8 +42,8 @@ int foo()
 	assert( pid > 0 );
 
 	struct menoetius_client client;
-	if( (res = menoetius_client_init( &client, "localhost", MENOETIUS_PORT ) ) ) {
-		LOG_ERROR("failed to init client");
+	if( ( res = menoetius_client_init( &client, "localhost", MENOETIUS_PORT ) ) ) {
+		LOG_ERROR( "failed to init client" );
 		goto error;
 	}
 
@@ -53,15 +53,15 @@ int foo()
 		goto error;
 	}
 
-	if( (res = menoetius_client_ensure_connected( &client ) ) ) {
-		LOG_ERROR("failed to connect");
+	if( ( res = menoetius_client_ensure_connected( &client ) ) ) {
+		LOG_ERROR( "failed to connect" );
 		goto error;
 	}
 
 	char buf[1024];
 
 	int n = 0;
-	char *s = buf;
+	char* s = buf;
 
 	uint8_t x = MENOETIUS_RPC_PUT_DATA;
 	memcpy( s, &x, sizeof( uint8_t ) );
@@ -89,13 +89,13 @@ int foo()
 		goto error;
 	}
 
-	usleep(100);
+	usleep( 100 );
 
 	// test server can still respond to another request
 
 	struct menoetius_client client2;
-	if( (res = menoetius_client_init( &client2, "localhost", MENOETIUS_PORT ) ) ) {
-		LOG_ERROR("failed to init client");
+	if( ( res = menoetius_client_init( &client2, "localhost", MENOETIUS_PORT ) ) ) {
+		LOG_ERROR( "failed to init client" );
 		goto error;
 	}
 

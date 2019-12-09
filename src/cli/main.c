@@ -4,10 +4,12 @@
 
 #include "benchmark.h"
 #include "get.h"
+#include "get_config.h"
 #include "globals.h"
 #include "help.h"
 #include "put.h"
 #include "query.h"
+#include "set_config.h"
 
 #include "log.h"
 #include "my_malloc.h"
@@ -83,6 +85,8 @@ int main( int argc, const char** argv, const char** env )
 		{"help", run_help},
 		{"put", run_put},
 		{"get", run_get},
+		{"get-config", run_get_config},
+		{"set-config", run_set_config},
 		{"query", run_query},
 		{"benchmark", run_benchmark},
 		{NULL, NULL},
